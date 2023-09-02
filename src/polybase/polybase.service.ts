@@ -36,7 +36,7 @@ export class PolybaseService {
     if (response.data.length === 0) {
       return { status: false, message: 'profile not found' };
     }
-    return { status: true, message: response.data[0] };
+    return { status: true, message: response.data[0].data };
   }
 
   async createProfile(formData: Profile): Promise<any> {
