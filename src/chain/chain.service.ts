@@ -80,13 +80,15 @@ async getUserTokens(address: string) {
 
   
   
-  return {
+ /*  return {
     'background': backgroundTokens,
     'head': headTokens,
     'jacket': jackedTokens,
     'prizes': prizesToken,
     
-  };
+  }; */
+  
+  return result;
 }
 
 
