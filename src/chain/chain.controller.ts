@@ -9,6 +9,14 @@ export class ChainController {
   async getAll() {
     return this.svc.getAllTokens();
   }
+  
+  @Get('/user/:address')
+  async getUserTokens(
+    @Param('address') address: string,
+  ) {
+    return this.svc.getUserTokens(address);
+  }
+  
   @Get('/:contract/:tokenid')
   async getTokenDetail(
     @Param('contract') contract: string,

@@ -52,6 +52,43 @@ export class ChainService {
     };
 }
 
+async getUserTokens(address: string) {
+  const retrievedTokens = await mumbaiClient.getLogs({
+    address: CONTRACT as Address,
+    event: parseAbiItem('event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)'),
+    fromBlock: 39248278n,
+    args: {
+      operator: "0xE4E78523FDa823973D0484Bd2dC7bC34343d68fd",
+      from: '0x0000000000000000000000000000000000000000' as Address,
+      to: address as Address
+    }
+  });
+
+  const result = await Promise.all(
+    retrievedTokens.map(async (token: any) => {
+      console.log(token.args.id); 
+      return this.getTokenDetail('', token.args.id);
+     
+    })
+  );
+
+  // Filter tokens that have metadata.category set to "background"
+  const backgroundTokens = result.filter(token => token.metadata && token.metadata.category === 'background');
+  const headTokens = result.filter(token => token.metadata && token.metadata.category === 'head');
+  const jackedTokens = result.filter(token => token.metadata && token.metadata.category === 'jacket');
+  const prizesToken = result.filter(token => token.metadata && token.metadata.category === 'prizes');
+
+  
+  
+  return {
+    'background': backgroundTokens,
+    'head': headTokens,
+    'jacket': jackedTokens,
+    'prizes': prizesToken,
+    
+  };
+}
+
 
   async mintProject() {
     console.log('minting project');
@@ -62,15 +99,17 @@ export class ChainService {
     const result = await mumbaiClient.readContract({
       address: CONTRACT,
       abi: abi,
-      functionName: 'getTokenInfo',
+      functionName: 'getCid',
       args: [tokenid],
     }) as any;
     
-    const metadata = await this.fetchMetadata(result.cid.toString());
+    console.log(result)
+    console.log(tokenid)
+    const metadata = await this.fetchMetadata(result.toString());
+    console.log(metadata);
     
     return {
-      id: parseInt(result.tokenid.toString(), 10),
-      cid: result.cid.toString(),
+      cid: result,
       metadata: metadata,
     };
   }
