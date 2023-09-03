@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
+import { ChainModule } from './chain/chain.module';
 import { PolybaseModule } from './polybase/polybase.module';
 
 @Module({
-  imports: [PolybaseModule],
+  imports: [PolybaseModule, ChainModule],
   controllers: [],
   providers: [],
 })

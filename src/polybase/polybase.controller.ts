@@ -20,6 +20,13 @@ export class PolybaseController {
     if (!result.status) throw new NotFoundException(result.message);
     return result;
   }
+  
+  @Get('/profiles/all')
+  async getProfiles() {
+    const result = await this.svc.getProfiles();
+    console.log(result);
+    return result;
+  }
 
   @Post('/create')
   async createProfile(@Body() formData: Profile) {
@@ -56,4 +63,12 @@ export class PolybaseController {
     const result = await this.svc.getFollowing(address);
     return result;
   }
+  @Get('/update/avatar/:address/:string')
+  async updateAvatar(
+    @Param('address') address: string,
+    @Param('string') string: string,
+  ) {
+    return this.svc.updateAvatar(address, string);
+  }
+
 }

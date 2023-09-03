@@ -56,6 +56,20 @@ export class PolybaseService {
 
     return { status: true, message: 'profile created successfully' };
   }
+  
+  async getProfiles(): Promise<any>{
+    const response = await this.profile.get();
+    
+    let profiles = [];
+    for (const item of response.data) {
+      try {
+        profiles.push(item.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    return profiles;
+  }
 
   async startFollow(address: string, signedMessage: string): Promise<any> {
     //need to verify this as well, but for now it's okay.
@@ -105,8 +119,13 @@ export class PolybaseService {
     }
   }
 
-  async updateProfile(): Promise<any> {
-    return null;
+  async updateAvatar(address:string, avatar: string): Promise<any> {
+    const response = await this.profile
+    .record(address)
+    .call('updateAvatar', [avatar]);
+
+
+  return response.data;
   }
 
   async followProfile(): Promise<any> {

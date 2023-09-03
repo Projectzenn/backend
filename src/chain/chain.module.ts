@@ -7,4 +7,4 @@ import { ChainService } from './chain.service';
   providers: [ChainService],
   exports: [ChainService],
 })
-export class InteractionModule {}
+export class ChainModule {}

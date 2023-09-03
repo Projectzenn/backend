@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ChainService } from './chain.service';
 
 @Controller('chain')
@@ -9,4 +9,13 @@ export class ChainController {
   async getAll() {
     return this.svc.getAllTokens();
   }
+  @Get('/:contract/:tokenid')
+  async getTokenDetail(
+    @Param('contract') contract: string,
+    @Param('tokenid') tokenid: string,
+  ) {
+    return this.svc.getTokenDetail(contract, tokenid);
+  }
+  
+ 
 }
