@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import fetch from 'node-fetch';
 import { Address, parseAbiItem } from 'viem';
 import { mumbaiClient } from './chain.helper';
 import abi from './interaction.abi.json';
