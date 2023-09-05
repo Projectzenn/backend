@@ -18,6 +18,13 @@ export class PolybaseController {
     const result = await this.svc.getProfileByAddress(address);
     console.log(result);
     if (!result.status) throw new NotFoundException(result.message);
+    //
+    if(result.data) {
+      //avatar convert string to json
+      ///differetnt
+      
+      result.data.avatar = result.data.avatar.split(',');
+    }
     return result;
   }
   
