@@ -75,21 +75,6 @@ async getUserTokens(address: string) {
     })
   );
 
-  // Filter tokens that have metadata.category set to "background"
-  const backgroundTokens = result.filter(token => token.metadata && token.metadata.category === 'background');
-  const headTokens = result.filter(token => token.metadata && token.metadata.category === 'head');
-  const jackedTokens = result.filter(token => token.metadata && token.metadata.category === 'jacket');
-  const prizesToken = result.filter(token => token.metadata && token.metadata.category === 'prizes');
-
-  
-  
- /*  return {
-    'background': backgroundTokens,
-    'head': headTokens,
-    'jacket': jackedTokens,
-    'prizes': prizesToken,
-    
-  }; */
   
   return result;
 }
