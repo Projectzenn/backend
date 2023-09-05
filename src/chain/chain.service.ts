@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import fetch from 'node-fetch';
 import { Address, parseAbiItem } from 'viem';
+
+import fetch from 'cross-fetch';
 import { mumbaiClient } from './chain.helper';
 import abi from './interaction.abi.json';
 const CONTRACT = '0x19B97a92800a059b66f3A7D3085042edbcaD4dbB';
@@ -10,7 +11,8 @@ export class ChainService {
   
   // Function to fetch metadata from IPFS
   private async fetchMetadata(cid: string): Promise<any> {
-    const response = await fetch(`https://ipfs.io/ipfs/${cid}`);
+    const response =  await fetch(`https://ipfs.io/ipfs/${cid}`);
+    console.log(response);
     if (!response.ok) {
       throw new Error('Failed to fetch metadata');
     }
