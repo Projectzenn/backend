@@ -19,6 +19,15 @@ import { ScoreService } from './score.service';
       console.log(result);
       return result;
     }
+    
+    @Get('/github/score/:address')
+    async getActivityScore(
+        @Param('address') address: string,
+    ) {
+      const result = await this.svc.getUserLanguages(address);
+      console.log(result);
+      return result;
+    }
   
     
   }
