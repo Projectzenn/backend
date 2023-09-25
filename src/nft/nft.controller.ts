@@ -16,7 +16,16 @@ import { NftService } from './nft.service';
         @Param('address') address: string,
     ) {
       const result = await this.svc.getAllNFTs(address);
-      console.log(result);
+
+      return result;
+    }
+    @Get('/:address/:tokenId')
+    async getSingleNFT(
+        @Param('address') address: string,
+        @Param('tokenId') tokenId: string,
+    ) {
+      const result = await this.svc.getNFTsByContract(address, tokenId);
+
       return result;
     }
     

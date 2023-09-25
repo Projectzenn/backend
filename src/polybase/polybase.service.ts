@@ -33,6 +33,7 @@ export class PolybaseService {
     console.log(address);
     const response = await this.profile.where('id', '==', address).get();
 
+
     if (response.data.length === 0) {
       return { status: false, message: 'profile not found' };
     }
@@ -123,6 +124,15 @@ export class PolybaseService {
     const response = await this.profile
     .record(address)
     .call('updateAvatar', [avatar]);
+
+
+  return response.data;
+  }
+  
+  async updateTokenBound(address:string, tba: string): Promise<any> {
+    const response = await this.profile
+    .record(address)
+    .call('updateTBA', [tba]);
 
 
   return response.data;

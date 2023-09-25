@@ -77,5 +77,15 @@ export class PolybaseController {
   ) {
     return this.svc.updateAvatar(address, string);
   }
+  
+  @Get('/update/tba/:address/:tba')
+  async updateTBA(
+    @Param('address') address: string,
+    @Param('tba') tba: string,
+  ) {
+    return this.svc.updateTokenBound(address, tba);
+  }
+
+  
 
 }
