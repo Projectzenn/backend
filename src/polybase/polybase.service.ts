@@ -174,6 +174,20 @@ export class PolybaseService {
 
   return response.data;
   }
+  async updateProfile(formData: any): Promise<any> {
+    const response = await this.profile
+    .record(formData.address)
+    .call('updateProfile', [
+      formData.email, 
+      formData.job, 
+      formData.company, 
+      formData.industry, 
+      formData.label
+    ]);
+
+
+  return response.data;
+  }
   
   async updateTokenBound(address:string, tba: string): Promise<any> {
     const response = await this.profile

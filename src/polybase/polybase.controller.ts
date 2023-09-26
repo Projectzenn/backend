@@ -52,6 +52,14 @@ export class PolybaseController {
     return result;
   }
   
+  @Post('/updateProfile')
+  async updateProfile(@Body() formData: any) {
+    const result = await this.svc.updateProfile(formData);
+    console.log(result);
+    if (!result.status) throw new BadRequestException(result.message);
+    return result;
+  }
+  
   @Post('/requestMint')
   async requestMint(@Body() formData: RequestMint) {
     const result = await this.svc.requestMint(formData);
