@@ -11,6 +11,7 @@ export class ChainService {
   
   // Function to fetch metadata from IPFS
   private async fetchMetadata(cid: string): Promise<any> {
+    console.log(cid);
     const response =  await fetch(`https://ipfs.io/ipfs/${cid}`);
     console.log(response);
     if (!response.ok) {
@@ -18,6 +19,7 @@ export class ChainService {
     }
     return await response.json();
   }
+  
   async getAllTokens() {
     const retrievedTokens = await mumbaiClient.getLogs({
       address: CONTRACT as Address,
@@ -46,13 +48,30 @@ export class ChainService {
 
     
     
-    return {
-      'background': backgroundTokens,
-      'head': headTokens,
-      'jacket': jackedTokens,
-      'prizes': prizesToken,
-      
-    };
+    return result;
+}
+
+async getTokens(address: Address) {
+  
+  const retrievedTokens = await mumbaiClient.getLogs({
+    address: CONTRACT as Address,
+    event: parseAbiItem('event TokenInfoAdded(uint indexed tokenid, string cid)'),
+    fromBlock: 39248278n,
+  })
+  
+  const result = await Promise.all(
+    retrievedTokens.map(async (token: any) => {
+     const metadata = await this.fetchMetadata(token.args.cid.toString());
+      return {
+        id: parseInt(token.args.tokenid.toString(), 10),
+        cid: token.args.cid.toString(),
+        metadata: metadata,
+      };
+    })
+  );
+
+    console.log(result);
+  return {result};
 }
 
 async getUserTokens(address: string) {
@@ -66,6 +85,8 @@ async getUserTokens(address: string) {
       to: address as Address
     }
   });
+  
+  
 
   const result = await Promise.all(
     retrievedTokens.map(async (token: any) => {

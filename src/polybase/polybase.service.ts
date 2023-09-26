@@ -4,6 +4,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { Collection, Polybase } from '@polybase/client';
+import { randomBytes } from 'crypto';
+import { uuidV4 } from 'ethers';
 import { getPolybaseInstance } from 'src/utils/polybase/getPolybaseInstance';
 
 export interface Profile {
@@ -16,10 +18,19 @@ export interface Profile {
   industry: string;
 }
 
+export interface RequestMint{
+  contract:string;
+  tokenId:string;
+  data: string[];
+  requester: string;
+  tokenbound: string;
+}
+
 @Injectable()
 export class PolybaseService {
   db: Polybase;
   profile: Collection<any>;
+  mintRequest: Collection<any>;
   follow: Collection<any>;
 
   //initiate polybase.
@@ -27,6 +38,7 @@ export class PolybaseService {
     this.db = getPolybaseInstance();
     this.profile = this.db.collection('User');
     this.follow = this.db.collection('Followers');
+    this.mintRequest = this.db.collection('MintRequest');
   }
 
   async getProfileByAddress(address: string): Promise<any> {
@@ -58,6 +70,26 @@ export class PolybaseService {
     return { status: true, message: 'profile created successfully' };
   }
   
+  async requestMint(formData: RequestMint): Promise<any> {
+    const id =  uuidV4(randomBytes(16));
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    try {
+      await this.mintRequest.create([
+        id,
+        formData.contract,
+        formData.tokenId,
+        formData.data,
+        formData.requester,
+        formData.tokenbound,
+        currentTimestamp
+      ]);
+    } catch (error) {
+      return { status: false, message: error };
+    }
+
+    return { status: true, message: 'Successfully requested mint.' };
+  }
+  
   async getProfiles(): Promise<any>{
     const response = await this.profile.get();
     
@@ -70,6 +102,20 @@ export class PolybaseService {
       }
     }
     return profiles;
+  }
+  
+  async getRequests(): Promise<any>{
+    const response = await this.mintRequest.get();
+    
+    let requests = [];
+    for (const item of response.data) {
+      try {
+        requests.push(item.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    return requests;
   }
 
   async startFollow(address: string, signedMessage: string): Promise<any> {

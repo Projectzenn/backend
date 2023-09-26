@@ -1,3 +1,6 @@
+/**
+ * Controller for Polybase API endpoints.
+ */
 import {
   BadRequestException,
   Body,
@@ -7,7 +10,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { PolybaseService, Profile } from './polybase.service';
+import { PolybaseService, Profile, RequestMint } from './polybase.service';
 
 @Controller('polybase')
 export class PolybaseController {
@@ -34,10 +37,24 @@ export class PolybaseController {
     console.log(result);
     return result;
   }
+  @Get('/requests/all')
+  async getMintRequests() {
+    const result = await this.svc.getRequests();
+    console.log(result);
+    return result;
+  }
 
   @Post('/create')
   async createProfile(@Body() formData: Profile) {
     const result = await this.svc.createProfile(formData);
+    console.log(result);
+    if (!result.status) throw new BadRequestException(result.message);
+    return result;
+  }
+  
+  @Post('/requestMint')
+  async requestMint(@Body() formData: RequestMint) {
+    const result = await this.svc.requestMint(formData);
     console.log(result);
     if (!result.status) throw new BadRequestException(result.message);
     return result;
