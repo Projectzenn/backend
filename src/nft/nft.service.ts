@@ -4,6 +4,7 @@
 
 import { Injectable } from "@nestjs/common";
 import { Alchemy, Network, Nft } from "alchemy-sdk";
+import { ChainService } from "src/chain/chain.service";
 
 const config = {
   apiKey: "alcht_s0wd1yQoSYY2Ru97nr8pwMiGcjKvNX", // Replace with your API key
@@ -21,39 +22,41 @@ export interface NFTItem {
 }
 @Injectable()
 export class NftService {
+  constructor(private readonly ChainService: ChainService) {}
   async getAllNFTs(address: string): Promise<NFTItem[]> {
-
-    
     // we will be testing it here for mumbai.
     let response = await alchemy.nft.getNftsForOwner(address);
 
-    
-    //so we want to make sure that we give back a result that has an name, image and category for each nft. 
-    let result = response.ownedNfts.map((item) => {
-      console.log(item)
-      return {
-        name: item.contract.name,
-        image: item.tokenUri?.raw,
-        category: item.tokenId,
-        contract: item.contract?.address,
-        tokenid: item.tokenId, 
-        type: item.contract.tokenType
-      } as NFTItem;
-    });
-    
-    return result;
+    //we need to do here is doing to same we did for hte minting process.
+    const allItems: any[] = [];
+    for (const mint of response.ownedNfts) {
+      try {
+        const nftDetails = await this.ChainService.getTokenDetail(
+          mint.contract.address,
+          mint.tokenId
+        );
+        allItems.push({
+          nft: nftDetails,
+          ...mint,
+          image: "https://ipfs.io/ipfs/" + nftDetails.metadata.image,
+          name: nftDetails.metadata.name,
+          category: nftDetails.metadata.category,
+          contract: mint.contract.address,
+          tokenId: mint.tokenId,
+        });
+      } catch (error) {
+        allItems.push("could not decrypt");
+      }
+    }
+    return allItems;
   }
-  
-  async getNFTsByContract(contract: string, tokenId: string): Promise<Nft> {
-    //we want all the information about a nft. 
-    const response = await alchemy.nft.getNftMetadata(
-      contract,
-      tokenId
-    );
-    
-    return response
-  }
-  
 
-  
+  async getNFTsByContract(contract: string, tokenId: string): Promise<Nft> {
+    //we want all the information about a nft.
+    const response = await alchemy.nft.getNftMetadata(contract, tokenId);
+    
+    
+
+    return response;
+  }
 }

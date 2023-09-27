@@ -78,9 +78,9 @@ export class PolybaseController {
     if (!result.status) throw new BadRequestException(result.message);
     return result;
   }
-  @Get('/unfollow/:address')
-  async unfollowProfile(@Param('address') address: string) {
-    const result = await this.svc.unfollowProfile(address);
+  @Get('/unfollow/:address/:followee')
+  async unfollowProfile(@Param('address') address: string, @Param('followee') followee: string) {
+    const result = await this.svc.unfollow(address, followee);
     console.log(result);
     return result;
   }
@@ -110,6 +110,8 @@ export class PolybaseController {
   ) {
     return this.svc.updateTokenBound(address, tba);
   }
+  
+  
 
   @Get('/nft/minting/:address')
   async getNFTOnMinting(@Param('address') address: string) {

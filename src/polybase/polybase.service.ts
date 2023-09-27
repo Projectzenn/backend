@@ -2,12 +2,12 @@
 // we can publicly store the files but only the msg.sender can decrypt the files.
 // how we do that is slightly different from the other services.
 
-import { Injectable } from '@nestjs/common';
-import { Collection, Polybase } from '@polybase/client';
-import { randomBytes } from 'crypto';
-import { uuidV4 } from 'ethers';
-import { ChainService } from 'src/chain/chain.service';
-import { getPolybaseInstance } from 'src/utils/polybase/getPolybaseInstance';
+import { Injectable } from "@nestjs/common";
+import { Collection, Polybase } from "@polybase/client";
+import { randomBytes } from "crypto";
+import { uuidV4 } from "ethers";
+import { ChainService } from "src/chain/chain.service";
+import { getPolybaseInstance } from "src/utils/polybase/getPolybaseInstance";
 
 export interface Profile {
   address: string;
@@ -18,9 +18,9 @@ export interface Profile {
   description: string;
 }
 
-export interface RequestMint{
-  contract:string;
-  tokenId:string;
+export interface RequestMint {
+  contract: string;
+  tokenId: string;
   data: string[];
   requester: string;
   tokenbound: string;
@@ -34,20 +34,18 @@ export class PolybaseService {
   follow: Collection<any>;
 
   //initiate polybase.
-  constructor( private readonly ChainService: ChainService) {
+  constructor(private readonly ChainService: ChainService) {
     this.db = getPolybaseInstance();
-    this.profile = this.db.collection('User');
-    this.follow = this.db.collection('Followers');
-    this.mintRequest = this.db.collection('MintRequest');
+    this.profile = this.db.collection("User");
+    this.follow = this.db.collection("Followers");
+    this.mintRequest = this.db.collection("MintRequest");
   }
 
   async getProfileByAddress(address: string): Promise<any> {
-    console.log(address);
-    const response = await this.profile.where('id', '==', address).get();
-
+    const response = await this.profile.where("id", "==", address).get();
 
     if (response.data.length === 0) {
-      return { status: false, message: 'profile not found' };
+      return { status: false, message: "profile not found" };
     }
     return { status: true, message: response.data[0].data };
   }
@@ -66,11 +64,11 @@ export class PolybaseService {
       return { status: false, message: error };
     }
 
-    return { status: true, message: 'profile created successfully' };
+    return { status: true, message: "profile created successfully" };
   }
-  
+
   async requestMint(formData: RequestMint): Promise<any> {
-    const id =  uuidV4(randomBytes(16));
+    const id = uuidV4(randomBytes(16));
     const currentTimestamp = Math.floor(Date.now() / 1000);
     try {
       await this.mintRequest.create([
@@ -80,38 +78,38 @@ export class PolybaseService {
         formData.data,
         formData.requester,
         formData.tokenbound,
-        currentTimestamp
+        currentTimestamp,
       ]);
     } catch (error) {
       return { status: false, message: error };
     }
 
-    return { status: true, message: 'Successfully requested mint.' };
+    return { status: true, message: "Successfully requested mint." };
   }
-  
-  async getProfiles(): Promise<any>{
+
+  async getProfiles(): Promise<any> {
     const response = await this.profile.get();
-    
+
     let profiles = [];
     for (const item of response.data) {
       try {
         profiles.push(item.data);
       } catch (error) {
-        console.log(error);
+        return error;
       }
     }
     return profiles;
   }
-  
-  async getRequests(): Promise<any>{
+
+  async getRequests(): Promise<any> {
     const response = await this.mintRequest.get();
-    
+
     let requests = [];
     for (const item of response.data) {
       try {
         requests.push(item.data);
       } catch (error) {
-        console.log(error);
+        return error;
       }
     }
     return requests;
@@ -124,91 +122,111 @@ export class PolybaseService {
     } catch (error) {
       return { status: false, message: error };
     }
-    return { status: true, message: 'followed successfully' };
+    return { status: true, message: "followed successfully" };
+  }
+  async unfollow(address: string, followee: string): Promise<any> {
+    //get the id of this and then delete.
+    try {
+  
+      await this.follow.record(address+"/"+followee).call("unfollow", []);
+    } catch (e) {
+      return e;
+    }
+
+    return followee;
   }
 
   async getFollowers(address: string): Promise<any> {
     //get all the folloewers of a users.
     try {
-      const response = await this.follow.where('follower', '==', address).get();
+      const response = await this.follow.where("follower", "==", address).get();
 
       const followers = [];
       for (const item of response.data) {
         try {
           followers.push(item.data.followee);
         } catch (error) {
-          console.log(error);
+          throw new Error(error);
         }
       }
       return followers;
     } catch (e) {
-      console.log(e);
+      new Error(e);
       return e;
     }
   }
   async getFollowing(address: string): Promise<any> {
     try {
-      const response = await this.follow.where('followee', '==', address).get();
-      console.log('success');
+      const response = await this.follow.where("followee", "==", address).get();
+
       const followers = [];
       for (const item of response.data) {
         try {
           followers.push(item.data.follower);
         } catch (error) {
-          console.log(error);
+          new Error(error);
         }
       }
       return followers;
     } catch (e) {
-      console.log(e);
+      new Error(e);
       return e;
     }
   }
 
-  async updateAvatar(address:string, avatar: string): Promise<any> {
+  async updateAvatar(address: string, avatar: string): Promise<any> {
     const response = await this.profile
-    .record(address)
-    .call('updateAvatar', [avatar]);
+      .record(address)
+      .call("updateAvatar", [avatar]);
 
-
-  return response.data;
+    return response.data;
   }
   async updateProfile(formData: any): Promise<any> {
     const response = await this.profile
-    .record(formData.address)
-    .call('updateProfile', [
-      formData.email, 
-      formData.job, 
-      formData.company, 
-      formData.industry, 
-      formData.label
-    ]);
+      .record(formData.address)
+      .call("updateProfile", [
+        formData.email,
+        formData.job,
+        formData.company,
+        formData.industry,
+        formData.label,
+      ]);
 
-
-  return response.data;
+    return response.data;
   }
-  
-  async updateTokenBound(address:string, tba: string): Promise<any> {
+
+  async updateTokenBound(address: string, tba: string): Promise<any> {
     const response = await this.profile
-    .record(address)
-    .call('updateTBA', [tba]);
+      .record(address)
+      .call("updateTBA", [tba]);
 
-
-  return response.data;
+    return response.data;
   }
-  async getNFTOnMinting(address:string){
-    const response = await this.mintRequest.where('requester', '==', address).get();
-    console.log(response.data);
-    
+  async getNFTOnMinting(address: string) {
+    const response = await this.mintRequest
+      .where("requester", "==", address)
+      .get();
+
     const allItems: any[] = [];
     for (const mint of response.data) {
       try {
-        const nftDetails = await  this.ChainService.getTokenDetail(mint.data.contract, mint.data.tokenId);
-        allItems.push({nft: nftDetails, ...mint.data, image: 'https://ipfs.io/ipfs/' + nftDetails.metadata.image, name: nftDetails.metadata.name, category: nftDetails.metadata.category});
+        const nftDetails = await this.ChainService.getTokenDetail(
+          mint.data.contract,
+          mint.data.tokenId
+        );
+        allItems.push({
+          nft: nftDetails,
+          ...mint.data,
+          image: "https://ipfs.io/ipfs/" + nftDetails.metadata.image,
+          name: nftDetails.metadata.name,
+          contract: mint.data.contract,
+          tokenId: mint.data.tokenId,
+          category: nftDetails.metadata.category,
+        });
       } catch (error) {
-        allItems.push('could not decrypt');
+        allItems.push("could not decrypt");
       }
-    }    
+    }
     return allItems;
   }
 
@@ -216,16 +234,11 @@ export class PolybaseService {
     return null;
   }
 
-  async unfollowProfile(address: string): Promise<any> {
-    return address;
-  }
   async changeStatus(id: string, status) {
     const timestamp = Math.floor(Date.now() / 1000);
     const response = await this.mintRequest
-    .record(id)
-    .call('updateStatus', [status, timestamp]);
+      .record(id)
+      .call("updateStatus", [status, timestamp]);
     return response;
   }
-  
-  
 }

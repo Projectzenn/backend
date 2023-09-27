@@ -122,6 +122,8 @@ async getUserTokens(address: string) {
     return {
       cid: result,
       metadata: metadata,
+      contract: contract, 
+      tokenid: tokenid
     };
   }
 }
