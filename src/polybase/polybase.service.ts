@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { Collection, Polybase } from '@polybase/client';
 import { randomBytes } from 'crypto';
 import { uuidV4 } from 'ethers';
+import { ChainService } from 'src/chain/chain.service';
 import { getPolybaseInstance } from 'src/utils/polybase/getPolybaseInstance';
 
 export interface Profile {
@@ -34,7 +35,7 @@ export class PolybaseService {
   follow: Collection<any>;
 
   //initiate polybase.
-  constructor() {
+  constructor( private readonly ChainService: ChainService) {
     this.db = getPolybaseInstance();
     this.profile = this.db.collection('User');
     this.follow = this.db.collection('Followers');
@@ -196,6 +197,21 @@ export class PolybaseService {
 
 
   return response.data;
+  }
+  async getNFTOnMinting(address:string){
+    const response = await this.mintRequest.where('requester', '==', address).get();
+    console.log(response.data);
+    
+    const allItems: any[] = [];
+    for (const mint of response.data) {
+      try {
+        const nftDetails = await  this.ChainService.getTokenDetail(mint.data.contract, mint.data.tokenId);
+        allItems.push({nft: nftDetails, ...mint.data, image: 'https://ipfs.io/ipfs/' + nftDetails.metadata.image, name: nftDetails.metadata.name, category: nftDetails.metadata.category});
+      } catch (error) {
+        allItems.push('could not decrypt');
+      }
+    }    
+    return allItems;
   }
 
   async followProfile(): Promise<any> {

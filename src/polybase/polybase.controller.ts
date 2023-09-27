@@ -111,6 +111,10 @@ export class PolybaseController {
     return this.svc.updateTokenBound(address, tba);
   }
 
-  
-
+  @Get('/nft/minting/:address')
+  async getNFTOnMinting(@Param('address') address: string) {
+    const result = await this.svc.getNFTOnMinting(address);
+    console.log(result);
+    return result;
+  }
 }
