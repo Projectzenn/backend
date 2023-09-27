@@ -117,4 +117,12 @@ export class PolybaseController {
     console.log(result);
     return result;
   }
+  
+  @Get('/nft/:status/:id')
+  async changeStatus(@Param('id') id: string
+  , @Param('status') status: string) {
+    const result = await this.svc.changeStatus(id, status);
+    console.log(result);
+    return result;
+  }
 }

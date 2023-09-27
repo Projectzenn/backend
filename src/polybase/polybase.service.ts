@@ -15,8 +15,7 @@ export interface Profile {
   name: string;
   email: string;
   job: string;
-  company: string;
-  industry: string;
+  description: string;
 }
 
 export interface RequestMint{
@@ -61,8 +60,7 @@ export class PolybaseService {
         formData.name,
         formData.email,
         formData.job,
-        formData.company,
-        formData.industry,
+        formData.description,
       ]);
     } catch (error) {
       return { status: false, message: error };
@@ -221,4 +219,13 @@ export class PolybaseService {
   async unfollowProfile(address: string): Promise<any> {
     return address;
   }
+  async changeStatus(id: string, status) {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const response = await this.mintRequest
+    .record(id)
+    .call('updateStatus', [status, timestamp]);
+    return response;
+  }
+  
+  
 }
