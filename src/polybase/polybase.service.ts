@@ -241,4 +241,27 @@ export class PolybaseService {
       .call("updateStatus", [status, timestamp]);
     return response;
   }
+  
+  async getCompanyJoin(address:string){
+    const response = await this.mintRequest
+    .where("contract", "==", address)
+    .get();
+    
+    //we also want to get all the profiles of the useres here. 
+    //we can do that by using the profile collection.
+    const requests: any[] = [];
+    for(const request of response.data){
+      try{
+        const nftDetails = await this.getProfileByAddress(request.data.requester);
+        requests.push({
+          request: request.data,
+          profile: nftDetails.message
+        });
+      }catch(error){
+        requests.push("could not decrypt");
+      }
+    }
+    
+    return requests;
+  }
 }

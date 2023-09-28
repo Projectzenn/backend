@@ -127,4 +127,11 @@ export class PolybaseController {
     console.log(result);
     return result;
   }
+  
+  @Get('/nft/:address')
+  async getRequestsByAddress(@Param('address') address: string) {
+    const result = await this.svc.getCompanyJoin(address);
+
+    return result;
+  }
 }
