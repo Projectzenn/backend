@@ -5,7 +5,7 @@ import fetch from 'cross-fetch';
 import { mumbaiClient } from './chain.helper';
 import abi from './interaction.abi.json';
 const CONTRACT = '0x19B97a92800a059b66f3A7D3085042edbcaD4dbB';
-
+const COMPANY_REGISTRY = "0xbB037266FacF6B84A127E755e98408E8d2b53b32"
 @Injectable()
 export class ChainService {
   
@@ -15,6 +15,7 @@ export class ChainService {
     const response =  await fetch(`https://ipfs.io/ipfs/${cid}`);
     console.log(response);
     if (!response.ok) {
+      return null;
       throw new Error('Failed to fetch metadata');
     }
     return await response.json();
@@ -38,15 +39,7 @@ export class ChainService {
           metadata: metadata,
         };
       })
-    );
-
-    // Filter tokens that have metadata.category set to "background"
-    const backgroundTokens = result.filter(token => token.metadata && token.metadata.category === 'background');
-    const headTokens = result.filter(token => token.metadata && token.metadata.category === 'head');
-    const jackedTokens = result.filter(token => token.metadata && token.metadata.category === 'jacket');
-    const prizesToken = result.filter(token => token.metadata && token.metadata.category === 'prizes');
-
-    
+    );   
     
     return result;
 }
@@ -56,7 +49,7 @@ async getTokens(address: Address) {
   const retrievedTokens = await mumbaiClient.getLogs({
     address: CONTRACT as Address,
     event: parseAbiItem('event TokenInfoAdded(uint indexed tokenid, string cid)'),
-    fromBlock: 39248278n,
+    fromBlock: 40608835n,
   })
   
   const result = await Promise.all(
@@ -72,6 +65,39 @@ async getTokens(address: Address) {
 
     console.log(result);
   return {result};
+}
+
+async getAllCompanies() {
+  console.log("getting all the companies soon...")
+  const retrievedTokens = await mumbaiClient.getLogs({
+    address: COMPANY_REGISTRY as Address,
+    event: parseAbiItem('event CompanyAdded(uint256 indexed companyId, string indexed name, string image, string details, address indexed creator, address addr)'),
+    fromBlock: 39248278n,
+  });
+  
+  console.log(retrievedTokens);
+
+  const result = await Promise.all(
+    retrievedTokens.map(async (token: any) => {
+      const metadata = await this.fetchMetadata(token.args.details.toString());
+      return {
+        id: token.args.companyId.toString(),
+        name: token.args.name.toString(),
+        image: token.args.image.toString(),
+        creator: token.args.creator.toString(),
+        addr: token.args.addr.toString(),
+        details_url: token.args.details.toString(),
+        details: metadata,
+      };
+    })
+  );
+  
+  
+  return result;
+}
+
+async getAllTokenHolders(address:string){
+  
 }
 
 async getUserTokens(address: string) {

@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { PolybaseService, Profile, RequestMint } from './polybase.service';
 
@@ -128,10 +129,19 @@ export class PolybaseController {
     return result;
   }
   
-  @Get('/nft/:address')
-  async getRequestsByAddress(@Param('address') address: string) {
-    const result = await this.svc.getCompanyJoin(address);
+  @Get('/company/request')
+  async getRequestsByAddress(
+    @Query('address') address: string,
+    @Query('status') status: string
+  ) {
+    // Now you have access to address and status as query parameters
+    
+    // Your existing logic to get result using the address
+    const result = await this.svc.getCompanyJoin(address, status);
+
+    // You can also use the status query parameter as needed
 
     return result;
   }
+  
 }

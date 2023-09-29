@@ -32,5 +32,11 @@ export class ChainController {
     return this.svc.getTokens(address);
   }
   
+  @Get('/get/company/all')
+  async getCompanyTokens() {
+    console.log("Getting all the companies and tokens from it")
+    return this.svc.getAllCompanies();
+  }
+  
  
 }

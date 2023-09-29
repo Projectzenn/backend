@@ -127,8 +127,7 @@ export class PolybaseService {
   async unfollow(address: string, followee: string): Promise<any> {
     //get the id of this and then delete.
     try {
-  
-      await this.follow.record(address+"/"+followee).call("unfollow", []);
+      await this.follow.record(address + "/" + followee).call("unfollow", []);
     } catch (e) {
       return e;
     }
@@ -241,27 +240,37 @@ export class PolybaseService {
       .call("updateStatus", [status, timestamp]);
     return response;
   }
-  
-  async getCompanyJoin(address:string){
-    const response = await this.mintRequest
-    .where("contract", "==", address)
-    .get();
+
+  async getCompanyJoin(address: string, status?: string) {
+    let response;
+    if (status) {
+      response = await this.mintRequest
+        .where("contract", "==", address)
+        .where("status", "==", status)
+        .get();
+    } else {
+      response = await this.mintRequest.where("contract", "==", address).get();
+    }
     
-    //we also want to get all the profiles of the useres here. 
+    console.log(response.data);
+
+    //we also want to get all the profiles of the useres here.
     //we can do that by using the profile collection.
     const requests: any[] = [];
-    for(const request of response.data){
-      try{
-        const nftDetails = await this.getProfileByAddress(request.data.requester);
+    for (const request of response.data) {
+      try {
+        const nftDetails = await this.getProfileByAddress(
+          request.data.requester
+        );
         requests.push({
           request: request.data,
-          profile: nftDetails.message
+          profile: nftDetails.message,
         });
-      }catch(error){
+      } catch (error) {
         requests.push("could not decrypt");
       }
     }
-    
+
     return requests;
   }
 }
