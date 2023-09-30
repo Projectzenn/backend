@@ -8,6 +8,7 @@ import { randomBytes } from "crypto";
 import { uuidV4 } from "ethers";
 import { ChainService } from "src/chain/chain.service";
 import { getPolybaseInstance } from "src/utils/polybase/getPolybaseInstance";
+import { Address } from "viem";
 
 export interface Profile {
   address: string;
@@ -99,6 +100,17 @@ export class PolybaseService {
       }
     }
     return profiles;
+  }
+  
+  async getProfileByTBA(tba: Address): Promise<any> {
+    console.log(tba);
+    const response = await this.profile.where("TBA", "==", tba).get();
+    
+    console.log(response.data);
+    if (response.data.length === 0) {
+      return { status: false, message: "profile not found" };
+    }
+    return { status: true, message: response.data[0].data };
   }
 
   async getRequests(): Promise<any> {

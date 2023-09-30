@@ -56,7 +56,12 @@ export class NftService {
     const response = await alchemy.nft.getNftMetadata(contract, tokenId);
     
     
-
+    
     return response;
+  }
+  
+  async getOwnersForContract(contractAddress: string): Promise<any> {
+    const owners = await alchemy.nft.getOwnersForContract(contractAddress);
+    return owners;
   }
 }

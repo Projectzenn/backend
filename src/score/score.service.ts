@@ -83,4 +83,11 @@ export class ScoreService {
         const languagesSummary = await this.getUserLanguages(username);
         return this.assignSkillLevel(languagesSummary);
       }
+      
+      async getHackathons(): Promise<any> {
+        const res = await fetch(`https://devpost.com/software/search?page=1&query=blockchain`);
+        const data = await res.json();
+        console.log(data);
+        return data;
+      }
 }

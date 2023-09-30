@@ -1,7 +1,7 @@
 import {
-    Controller,
-    Get,
-    Param
+  Controller,
+  Get,
+  Param
 } from '@nestjs/common';
 import { ScoreService } from './score.service';
   
@@ -25,6 +25,14 @@ import { ScoreService } from './score.service';
         @Param('address') address: string,
     ) {
       const result = await this.svc.getUserLanguages(address);
+      console.log(result);
+      return result;
+    }
+    
+    @Get('/hackathons')
+    async getHackathons()
+    {
+      const result = await this.svc.getHackathons();
       console.log(result);
       return result;
     }

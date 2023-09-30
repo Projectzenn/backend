@@ -3,9 +3,12 @@ import { Address, parseAbiItem } from 'viem';
 
 import fetch from 'cross-fetch';
 import { mumbaiClient } from './chain.helper';
+import { CompanyDetailsResult } from './chain.types';
+import companyAbi from './company.abi.json';
 import abi from './interaction.abi.json';
 const CONTRACT = '0x19B97a92800a059b66f3A7D3085042edbcaD4dbB';
 const COMPANY_REGISTRY = "0xbB037266FacF6B84A127E755e98408E8d2b53b32"
+
 @Injectable()
 export class ChainService {
   
@@ -96,6 +99,11 @@ async getAllCompanies() {
   return result;
 }
 
+async getCompanyDetails(address: string){
+  //try to read from the contract in order to get this detais. 
+  
+}
+
 async getAllTokenHolders(address:string){
   
 }
@@ -152,4 +160,28 @@ async getUserTokens(address: string) {
       tokenid: tokenid
     };
   }
+  
+  async getCompanyContractDetails(address: Address) : Promise<CompanyDetailsResult> {
+    //reading the details 
+    const result = await mumbaiClient.readContract({
+      address: address,
+      abi: companyAbi,
+      functionName: 'details'
+    }) as any;
+    
+    //this returns me a cid.
+    
+    const metadata = await this.fetchMetadata(result.toString());
+    console.log(metadata);
+    
+    
+    return {
+      details: result, 
+      name: metadata?.name, 
+      image: metadata?.image, 
+      description: metadata?.description, 
+      owner: ""
+    };
+  }
 }
+
