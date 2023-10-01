@@ -177,9 +177,12 @@ async getUserTokens(address: string) {
     
     return {
       details: result, 
-      name: metadata?.name, 
-      image: metadata?.image, 
-      description: metadata?.description, 
+      name: metadata.groupName, 
+      image: metadata.image,
+      description: metadata.introduction, 
+      urls: metadata.urls, 
+      email: metadata.email,
+      type: metadata.type,
       owner: ""
     };
   }

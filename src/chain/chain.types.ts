@@ -3,6 +3,9 @@ export type CompanyDetailsResult = {
     owner: string,
     description: string, 
     image: string,
-    details: any
+    details: any, 
+    email: string,
+    type: "company" | "education" | "community", 
+    urls:string[],
   }
   
