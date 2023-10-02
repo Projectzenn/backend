@@ -19,6 +19,8 @@ import { NftService } from './nft.service';
 
       return result;
     }
+    
+    
     @Get('/:address/:tokenId')
     async getSingleNFT(
         @Param('address') address: string,

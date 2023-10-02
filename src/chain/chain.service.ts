@@ -6,7 +6,8 @@ import { mumbaiClient } from './chain.helper';
 import { CompanyDetailsResult } from './chain.types';
 import companyAbi from './company.abi.json';
 import abi from './interaction.abi.json';
-const CONTRACT = '0x19B97a92800a059b66f3A7D3085042edbcaD4dbB';
+//const CONTRACT = '0x19B97a92800a059b66f3A7D3085042edbcaD4dbB';
+const CONTRACT = '0xf9Ac80a9985bcD5Cbc8d7759b4e6CBd502A0c55C';
 const COMPANY_REGISTRY = "0xbB037266FacF6B84A127E755e98408E8d2b53b32"
 
 @Injectable()
@@ -19,7 +20,7 @@ export class ChainService {
     console.log(response);
     if (!response.ok) {
       return null;
-      throw new Error('Failed to fetch metadata');
+
     }
     return await response.json();
   }
@@ -27,8 +28,9 @@ export class ChainService {
   async getAllTokens() {
     const retrievedTokens = await mumbaiClient.getLogs({
       address: CONTRACT as Address,
-      event: parseAbiItem('event TokenInfoAdded(uint indexed tokenid, string cid)'),
-      fromBlock: 39248278n,
+      event: parseAbiItem('event TokenInfoAdded(uint256 tokenId, string cid)'),
+      //fromBlock: 39248278n,
+      fromBlock: 40608835n,
     });
 
     const result = await Promise.all(
@@ -37,7 +39,7 @@ export class ChainService {
         console.log(token);
         const metadata = await this.fetchMetadata(token.args.cid.toString());
         return {
-          id: parseInt(token.args.tokenid.toString(), 10),
+          id: parseInt(token.args.tokenId.toString(), 10),
           cid: token.args.cid.toString(),
           metadata: metadata,
         };
