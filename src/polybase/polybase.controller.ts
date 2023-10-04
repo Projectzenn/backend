@@ -120,6 +120,13 @@ export class PolybaseController {
     return change;
   }
   
+  @Get('/delete/mintrequest/:id')
+  async deleteMintRequest(
+    @Param('id') id: string,
+  ) {
+    return this.svc.deleteMintRequest(id);
+  }
+  
 
   
   @Get('/update/tba/:address/:tba')

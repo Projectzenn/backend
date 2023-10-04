@@ -220,6 +220,14 @@ export class PolybaseService {
 
     return response.data;
   }
+  
+  async deleteMintRequest(id: string){
+    const response = await this.mintRequest
+      .record(id)
+      .call("deleteRequest", []);
+      
+      return response;
+  }
 
   async updateTokenBound(address: string, tba: string): Promise<any> {
     const response = await this.profile
