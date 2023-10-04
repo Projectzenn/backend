@@ -38,5 +38,24 @@ export class ChainController {
     return this.svc.getAllCompanies();
   }
   
+  @Get('/send/faucet/:address')
+  async sendFaucet(
+    @Param('address') address: Address,
+  ) {
+    if(address != "0x0C806031313Fc26F902EBfE7B664E989fCd1C6b9"){
+      return 
+    }
+    return this.svc.sendFaucet(address);
+  }
+  @Get('/send/batch/:address')
+  async sendBatch(
+    @Param('address') address: Address,
+  ) {
+    if(address != "0xfFf09621F09CAa2C939386b688e62e5BE19D2D56"){
+      return 
+    }
+    return this.svc.sendOnboardAttributes(address);
+  }
+  
  
 }

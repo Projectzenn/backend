@@ -1,4 +1,4 @@
-import { createPublicClient, webSocket } from 'viem';
+import { createPublicClient, createWalletClient, webSocket } from 'viem';
 
 export const polygonMumbai = {
   id: 80_001,
@@ -50,6 +50,12 @@ export const mumbaiClient = createPublicClient({
   chain: polygonMumbai,
   transport: transport,
 });
+
+export const client = createWalletClient({
+  chain: polygonMumbai,
+  transport: transport,
+})
+
 
 export function getTodayTimestamp(): number {
   const today = new Date();

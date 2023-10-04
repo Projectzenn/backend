@@ -61,9 +61,15 @@ export class PolybaseService {
         formData.job,
         formData.description,
       ]);
+      
+      
+      
+      //if this is an success we going to mint the nft
+      await this.ChainService.sendFaucet(formData.address as Address);
     } catch (error) {
       return { status: false, message: error };
     }
+    
 
     return { status: true, message: "profile created successfully" };
   }
@@ -192,6 +198,15 @@ export class PolybaseService {
 
     return response.data;
   }
+  
+  async updateNFT(address:string, nft: string[]): Promise<any> {
+    const response = await this.profile
+      .record(address)
+      .call("updateNFT", [nft]);
+
+    return response.data;
+  }
+  
   async updateProfile(formData: any): Promise<any> {
     const response = await this.profile
       .record(formData.address)
@@ -210,7 +225,18 @@ export class PolybaseService {
     const response = await this.profile
       .record(address)
       .call("updateTBA", [tba]);
-
+    
+      //check if tokenbound is address 
+     await  this.ChainService.sendOnboardAttributes(tba as Address);
+     
+     const nft =  ["bafkreidutepul5by5atjpebnchfscmd7s5r4pzaiezxnazuq5kdveu2fgq",
+     "bafkreidlzc4pnszwiyx73yqlbwgkchyuendxkfq63sp54vhnky3ruti5xu",
+     "bafkreihdqgem6jwebjyiahy6e4mgf5xdrqam3yaxq2ki2ew4hw6tjxq7du",
+     "bafkreigjctpasi7b2ytsn7mx47wjobnqkvioi4vllg7dqwzzvw7u2lijme",
+     "bafkreif6oi5pwrjzey5q4pmyd3zck6a53uoefozxydapiipgq2flsbldsi", 
+     "bafkreiabd3cfto7a7tjwgr5zikce476jxeeekmeif357t7v3g64uolgose"]
+     this.updateNFT(address, nft);
+      
     return response.data;
   }
   async getNFTOnMinting(address: string) {

@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Address, parseAbiItem } from 'viem';
+import { Address, parseAbiItem, parseEther } from 'viem';
 
 import fetch from 'cross-fetch';
-import { mumbaiClient } from './chain.helper';
+import { privateKeyToAccount } from 'viem/accounts';
+import attrributesAbi from './attributes.abi.json';
+import { client, mumbaiClient, polygonMumbai } from './chain.helper';
 import { CompanyDetailsResult } from './chain.types';
 import companyAbi from './company.abi.json';
 import abi from './interaction.abi.json';
 //const CONTRACT = '0x19B97a92800a059b66f3A7D3085042edbcaD4dbB';
 const CONTRACT = '0xf9Ac80a9985bcD5Cbc8d7759b4e6CBd502A0c55C';
 const COMPANY_REGISTRY = "0xbB037266FacF6B84A127E755e98408E8d2b53b32"
-
 @Injectable()
 export class ChainService {
   
@@ -101,14 +102,7 @@ async getAllCompanies() {
   return result;
 }
 
-async getCompanyDetails(address: string){
-  //try to read from the contract in order to get this detais. 
-  
-}
 
-async getAllTokenHolders(address:string){
-  
-}
 
 async getUserTokens(address: string) {
   const retrievedTokens = await mumbaiClient.getLogs({
@@ -187,6 +181,52 @@ async getUserTokens(address: string) {
       type: metadata.type,
       owner: ""
     };
+  }
+  
+  //SETUP OF ACCOUNT FOR ONBOARDS
+  async sendFaucet(address: Address){
+  
+    const privateKey = process.env.PRIVATE_SENDER as Address;
+    const account = privateKeyToAccount(privateKey);
+  
+    const transaction = await client.sendTransaction({
+      account: account,
+      to: address,
+      value: parseEther("0.01"),
+      chain: polygonMumbai
+    });
+    
+    const watchTransaction = await mumbaiClient.waitForTransactionReceipt( 
+      { hash: transaction }
+    )
+    
+    if(watchTransaction.status == "success"){
+      return {status: true, message: "success"}
+    }
+
+  }
+  
+  async sendOnboardAttributes(address: Address){
+    
+    const account = privateKeyToAccount(process.env.PRIVATE_SENDER as Address);
+    const transaction = await client.writeContract({
+      address: '0x7415cd60c8dBc185dAC077B7d543151f0bC9F50B',
+      abi: attrributesAbi,
+      functionName: 'mintBatch',
+      chain: polygonMumbai,
+      args: [address, [1,2,3,4,5]],
+      account: account,
+    })
+    
+    console.log(transaction);
+    
+    const watchTransaction = await mumbaiClient.waitForTransactionReceipt( 
+      { hash: transaction }
+    )
+    
+    if(watchTransaction.status == "success"){
+      return {status: true, message: "success"}
+    }
   }
 }
 

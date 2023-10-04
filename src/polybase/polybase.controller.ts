@@ -104,6 +104,24 @@ export class PolybaseController {
     return this.svc.updateAvatar(address, string);
   }
   
+  @Get('/update/nft/:address/:nft')
+  async updateNFT(
+    @Param('address') address: string,
+    @Param('nft') nft: string,
+  ) {
+    const newNFT =  ["bafkreidutepul5by5atjpebnchfscmd7s5r4pzaiezxnazuq5kdveu2fgq",
+    "bafkreidlzc4pnszwiyx73yqlbwgkchyuendxkfq63sp54vhnky3ruti5xu",
+    "bafkreihdqgem6jwebjyiahy6e4mgf5xdrqam3yaxq2ki2ew4hw6tjxq7du",
+    "bafkreigjctpasi7b2ytsn7mx47wjobnqkvioi4vllg7dqwzzvw7u2lijme",
+    "bafkreif6oi5pwrjzey5q4pmyd3zck6a53uoefozxydapiipgq2flsbldsi", 
+    "bafkreiabd3cfto7a7tjwgr5zikce476jxeeekmeif357t7v3g64uolgose"]
+    const change =  await this.svc.updateNFT(address, newNFT);
+    console.log(change);
+    return change;
+  }
+  
+
+  
   @Get('/update/tba/:address/:tba')
   async updateTBA(
     @Param('address') address: string,
