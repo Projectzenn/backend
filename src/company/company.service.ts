@@ -39,7 +39,6 @@ export class CompanyService {
     async getMembers(address:string): Promise<any[]>{
         const ownersResponse = await this.NftService.getOwnersForContract(address);
         
-        console.log(ownersResponse as Address)
         //loop over eachowner and return 
         const members = [];
         for (const owner of ownersResponse.owners){

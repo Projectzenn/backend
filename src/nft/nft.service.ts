@@ -5,6 +5,7 @@
 import { Injectable } from "@nestjs/common";
 import { Alchemy, Network, Nft } from "alchemy-sdk";
 import { ChainService } from "src/chain/chain.service";
+import { Address } from "viem";
 
 const config = {
   apiKey: "alcht_s0wd1yQoSYY2Ru97nr8pwMiGcjKvNX", // Replace with your API key
@@ -29,10 +30,11 @@ export class NftService {
 
     //we need to do here is doing to same we did for hte minting process.
     const allItems: any[] = [];
+    
     for (const mint of response.ownedNfts) {
       try {
         const nftDetails = await this.ChainService.getTokenDetail(
-          mint.contract.address,
+          mint.contract.address as Address,
           mint.tokenId
         );
         allItems.push({
@@ -45,7 +47,12 @@ export class NftService {
           tokenId: mint.tokenId,
         });
       } catch (error) {
-        allItems.push("could not decrypt");
+        allItems.push({nft: "could not decrypt", 
+        ...mint,
+        contract: mint.contract.address,
+        tokenId: mint.tokenId,
+
+      });
       }
     }
     return allItems;

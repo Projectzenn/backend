@@ -20,7 +20,7 @@ export class PolybaseController {
   @Get(':address')
   async getProfile(@Param('address') address: string) {
     const result = await this.svc.getProfileByAddress(address);
-    console.log(result);
+
     if (!result.status) throw new NotFoundException(result.message);
     //
     if(result.data) {
@@ -35,20 +35,20 @@ export class PolybaseController {
   @Get('/profiles/all')
   async getProfiles() {
     const result = await this.svc.getProfiles();
-    console.log(result);
+
     return result;
   }
   @Get('/requests/all')
   async getMintRequests() {
     const result = await this.svc.getRequests();
-    console.log(result);
+
     return result;
   }
 
   @Post('/create')
   async createProfile(@Body() formData: Profile) {
     const result = await this.svc.createProfile(formData);
-    console.log(result);
+
     if (!result.status) throw new BadRequestException(result.message);
     return result;
   }
@@ -56,7 +56,7 @@ export class PolybaseController {
   @Post('/updateProfile')
   async updateProfile(@Body() formData: any) {
     const result = await this.svc.updateProfile(formData);
-    console.log(result);
+
     if (!result.status) throw new BadRequestException(result.message);
     return result;
   }
@@ -64,7 +64,7 @@ export class PolybaseController {
   @Post('/requestMint')
   async requestMint(@Body() formData: RequestMint) {
     const result = await this.svc.requestMint(formData);
-    console.log(result);
+
     if (!result.status) throw new BadRequestException(result.message);
     return result;
   }
@@ -75,20 +75,20 @@ export class PolybaseController {
     @Param('signedMessage') signedMessage: string,
   ) {
     const result = await this.svc.startFollow(address, signedMessage);
-    console.log(result);
+
     if (!result.status) throw new BadRequestException(result.message);
     return result;
   }
   @Get('/unfollow/:address/:followee')
   async unfollowProfile(@Param('address') address: string, @Param('followee') followee: string) {
     const result = await this.svc.unfollow(address, followee);
-    console.log(result);
+
     return result;
   }
   @Get('/followers/:address')
   async getFollowers(@Param('address') address: string) {
     const result = await this.svc.getFollowers(address);
-    console.log(result);
+
     return result;
   }
   @Get('/following/:address')
@@ -116,13 +116,13 @@ export class PolybaseController {
     "bafkreif6oi5pwrjzey5q4pmyd3zck6a53uoefozxydapiipgq2flsbldsi", 
     "bafkreiabd3cfto7a7tjwgr5zikce476jxeeekmeif357t7v3g64uolgose"]
     const change =  await this.svc.updateNFT(address, newNFT);
-    console.log(change);
+
     return change;
   }
   
-  @Get('/delete/mintrequest/:id')
+  @Get('/delete/mintrequest')
   async deleteMintRequest(
-    @Param('id') id: string,
+    @Query('id') id: string,
   ) {
     return this.svc.deleteMintRequest(id);
   }
@@ -142,7 +142,7 @@ export class PolybaseController {
   @Get('/nft/minting/:address')
   async getNFTOnMinting(@Param('address') address: string) {
     const result = await this.svc.getNFTOnMinting(address);
-    console.log(result);
+
     return result;
   }
   
@@ -150,7 +150,7 @@ export class PolybaseController {
   async changeStatus(@Param('id') id: string
   , @Param('status') status: string) {
     const result = await this.svc.changeStatus(id, status);
-    console.log(result);
+
     return result;
   }
   

@@ -8,7 +8,7 @@ import { Injectable } from "@nestjs/common";
 @Injectable()
 export class ScoreService {
   async githubScore(username: string): Promise<any> {
-    console.log("searching for the username")
+
     const res = await fetch(`https://api.github.com/users/${username}`);
     const data = await res.json();
 
@@ -44,7 +44,7 @@ export class ScoreService {
     
       async getUserLanguages(username: string) {
         const repos = await this.usersRepo(username);
-        console.log(repos);
+
         const languagesData = await Promise.all(repos.map(repo => this.fetchRepoLanguages(repo.languages_url)));
     
         const languagesSummary = {};
@@ -87,7 +87,7 @@ export class ScoreService {
       async getHackathons(): Promise<any> {
         const res = await fetch(`https://devpost.com/software/search?page=1&query=blockchain`);
         const data = await res.json();
-        console.log(data);
+
         return data;
       }
 }

@@ -23,7 +23,7 @@ export class ChainController {
     @Param('contract') contract: string,
     @Param('tokenid') tokenid: string,
   ) {
-    return this.svc.getTokenDetail(contract, tokenid);
+    return this.svc.getTokenDetail(contract as Address, tokenid);
   }
   @Get('/all/:address')
   async getAllNFTs(
@@ -34,7 +34,7 @@ export class ChainController {
   
   @Get('/get/company/all')
   async getCompanyTokens() {
-    console.log("Getting all the companies and tokens from it")
+
     return this.svc.getAllCompanies();
   }
   

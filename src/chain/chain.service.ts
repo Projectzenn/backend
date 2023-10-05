@@ -16,9 +16,9 @@ export class ChainService {
   
   // Function to fetch metadata from IPFS
   private async fetchMetadata(cid: string): Promise<any> {
-    console.log(cid);
+
     const response =  await fetch(`https://ipfs.io/ipfs/${cid}`);
-    console.log(response);
+
     if (!response.ok) {
       return null;
 
@@ -36,8 +36,7 @@ export class ChainService {
 
     const result = await Promise.all(
       retrievedTokens.map(async (token: any) => {
-        console.log(token.args.cid.toString());
-        console.log(token);
+
         const metadata = await this.fetchMetadata(token.args.cid.toString());
         return {
           id: parseInt(token.args.tokenId.toString(), 10),
@@ -69,19 +68,17 @@ async getTokens(address: Address) {
     })
   );
 
-    console.log(result);
+
   return {result};
 }
 
 async getAllCompanies() {
-  console.log("getting all the companies soon...")
   const retrievedTokens = await mumbaiClient.getLogs({
     address: COMPANY_REGISTRY as Address,
     event: parseAbiItem('event CompanyAdded(uint256 indexed companyId, string indexed name, string image, string details, address indexed creator, address addr)'),
     fromBlock: 39248278n,
   });
   
-  console.log(retrievedTokens);
 
   const result = await Promise.all(
     retrievedTokens.map(async (token: any) => {
@@ -120,8 +117,8 @@ async getUserTokens(address: string) {
 
   const result = await Promise.all(
     retrievedTokens.map(async (token: any) => {
-      console.log(token.args.id); 
-      return this.getTokenDetail('', token.args.id);
+
+      return this.getTokenDetail(CONTRACT, token.args.id);
      
     })
   );
@@ -131,23 +128,18 @@ async getUserTokens(address: string) {
 }
 
 
-  async mintProject() {
-    console.log('minting project');
-  }
   
-  async getTokenDetail(contract: string, tokenid: string) {
+  async getTokenDetail(contract: Address, tokenid: string) {
     //reading the details 
     const result = await mumbaiClient.readContract({
-      address: CONTRACT,
+      address: contract,
       abi: abi,
       functionName: 'getCid',
       args: [tokenid],
     }) as any;
     
-    console.log(result)
-    console.log(tokenid)
     const metadata = await this.fetchMetadata(result.toString());
-    console.log(metadata);
+    
     
     return {
       cid: result,
@@ -168,7 +160,7 @@ async getUserTokens(address: string) {
     //this returns me a cid.
     
     const metadata = await this.fetchMetadata(result.toString());
-    console.log(metadata);
+
     
     
     return {
@@ -217,8 +209,6 @@ async getUserTokens(address: string) {
       args: [address, [1,2,3,4,5]],
       account: account,
     })
-    
-    console.log(transaction);
     
     const watchTransaction = await mumbaiClient.waitForTransactionReceipt( 
       { hash: transaction }
