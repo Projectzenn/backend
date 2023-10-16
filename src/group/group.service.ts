@@ -7,6 +7,7 @@ import { Injectable } from "@nestjs/common";
 import { ChainService } from "src/chain/chain.service";
 import { NftService } from "src/nft/nft.service";
 import { PolybaseService } from "src/polybase/polybase.service";
+import { Address } from "viem";
 
 //https://mumbai.polygonscan.com/address/0x6eF66aa692259C681adB7c728a0CD44cAdc81b42#code
 //SUPPORT FOR MORE NETWORKS IS POSSIBLE AS LONG AS THE GRAPH SUPPORTS IT.
@@ -40,6 +41,24 @@ export class GroupService {
 
     return tokens;
   }
+  
+  async getGroup(address: string): Promise<any> {
+    let groupChat = await this.getGroupChat(`${address}/${address}`);
+    const groupDetail = await this.ChainService.getCompanyContractDetails(address as Address);
+    const members = await this.NftService.getOwnersForContract(address);
+    
+    if(groupChat.length > 0){
+      groupChat = groupChat[0].data
+    }
+    
+    return {
+      owners: members.owners,
+      details:groupDetail,
+      address:address,
+      chat: groupChat,
+    };
+  }
+  
 
   async getAllGroups(): Promise<any[]> {
     const query = gql`
@@ -70,5 +89,14 @@ export class GroupService {
     return requests;
 
     return [];
+  }
+  
+  
+  async saveGroupChat(from:string, to:string, chatId: string): Promise<any> {
+    this.PolybaseService.saveGroupChat(from, to, chatId);
+  }
+  async getGroupChat(id: string): Promise<any> {
+    return this.PolybaseService.getGroupChat(id);
+    
   }
 }

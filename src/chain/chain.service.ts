@@ -15,7 +15,7 @@ const COMPANY_REGISTRY = "0xbB037266FacF6B84A127E755e98408E8d2b53b32"
 export class ChainService {
   
   // Function to fetch metadata from IPFS
-  private async fetchMetadata(cid: string): Promise<any> {
+  async fetchMetadata(cid: string): Promise<any> {
 
     const response =  await fetch(`https://ipfs.io/ipfs/${cid}`);
 

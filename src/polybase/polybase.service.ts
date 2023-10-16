@@ -8,7 +8,7 @@ import { randomBytes } from "crypto";
 import { uuidV4 } from "ethers";
 import { ChainService } from "src/chain/chain.service";
 import { getPolybaseInstance } from "src/utils/polybase/getPolybaseInstance";
-import { Address } from "viem";
+import { Address, getAddress } from "viem";
 
 export interface Profile {
   address: string;
@@ -33,6 +33,7 @@ export class PolybaseService {
   profile: Collection<any>;
   mintRequest: Collection<any>;
   follow: Collection<any>;
+  groupChat: Collection<any>;
 
   //initiate polybase.
   constructor(private readonly ChainService: ChainService) {
@@ -40,6 +41,7 @@ export class PolybaseService {
     this.profile = this.db.collection("User");
     this.follow = this.db.collection("Followers");
     this.mintRequest = this.db.collection("MintRequest");
+    this.groupChat = this.db.collection("GroupChat");
   }
 
   async getProfileByAddress(address: string): Promise<any> {
@@ -110,6 +112,8 @@ export class PolybaseService {
   
   async getProfileByTBA(tba: Address): Promise<any> {
     console.log(tba);
+    tba = getAddress(tba);
+
     const response = await this.profile.where("TBA", "==", tba).get();
     
     console.log(response.data);
@@ -318,5 +322,26 @@ export class PolybaseService {
     }
 
     return requests;
+  }
+  
+  
+  async saveGroupChat(from:string, to:string, chatId:string) {
+    await this.groupChat.create([from, to, chatId])
+    .then((response) => {
+      console.log(response);
+      return response;
+    }).catch((error) => {
+      console.log(error);
+      //throw error here.. 
+      
+      return error;
+    })
+
+  }
+  
+  async getGroupChat(id:string) {
+    const response = await this.groupChat.where("id", "==", id).get();
+    
+    return response.data;
   }
 }

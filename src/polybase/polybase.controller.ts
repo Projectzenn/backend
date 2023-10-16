@@ -11,6 +11,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Address } from 'viem';
 import { PolybaseService, Profile, RequestMint } from './polybase.service';
 
 @Controller('polybase')
@@ -30,6 +31,19 @@ export class PolybaseController {
       result.data.avatar = result.data.avatar.split(',');
     }
     return result;
+  }
+  
+  @Get('/profile/tba/:address')
+  async getProfileTBA(@Param('address') address: string) {
+    console.log("fetiching userprofile absed on tba")
+    const result = await this.svc.getProfileByTBA(address as Address);
+    console.log(result);
+    if (!result.status) throw new NotFoundException(result.message);
+    //
+    
+    
+    
+    return result.message;
   }
   
   @Get('/profiles/all')
