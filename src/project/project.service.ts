@@ -6,6 +6,7 @@ import {
 } from "@apollo/client/core";
 import { Injectable } from "@nestjs/common";
 import { ChainService } from "src/chain/chain.service";
+import { PolybaseService } from "src/polybase/polybase.service";
 
 const projectLink = new HttpLink({
   uri: "https://api.studio.thegraph.com/query/49385/projects/version/latest",
@@ -30,7 +31,7 @@ export interface Project {
 }
 @Injectable()
 export class ProjectService {
-  constructor(private readonly ChainService: ChainService) {}
+  constructor(private readonly ChainService: ChainService, private readonly PolybaseService: PolybaseService) {}
   async getAllProjects(): Promise<any[]> {
     // we will be testing it here for mumbai.
     const query = gql`
@@ -149,7 +150,16 @@ export class ProjectService {
       });
     }
     
+    //getting the chatId aswel 
+    let groupChat = await this.PolybaseService.getGroupChat(`${address}/${address}`);
+    if (groupChat.length > 0) {
+      groupChat = groupChat[0].data;
+    }
+    
 
-    return requests;
+    return {
+      ...requests,
+      chatId: groupChat
+    };
   }
 }

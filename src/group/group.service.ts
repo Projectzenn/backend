@@ -2,23 +2,27 @@
 // we can publicly store the files but only the msg.sender can decrypt the files.
 // how we do that is slightly different from the other services.
 
-import { ApolloClient, HttpLink, InMemoryCache, gql } from "@apollo/client/core";
+import {
+  ApolloClient,
+  HttpLink,
+  InMemoryCache,
+  gql,
+} from "@apollo/client/core";
 import { Injectable } from "@nestjs/common";
 import { ChainService } from "src/chain/chain.service";
 import { NftService } from "src/nft/nft.service";
 import { PolybaseService } from "src/polybase/polybase.service";
-import { Address } from "viem";
 
 //https://mumbai.polygonscan.com/address/0x6eF66aa692259C681adB7c728a0CD44cAdc81b42#code
 //SUPPORT FOR MORE NETWORKS IS POSSIBLE AS LONG AS THE GRAPH SUPPORTS IT.
-const billboardLink = new HttpLink({
-  uri: "https://api.studio.thegraph.com/query/49385/groups/version/latest",
+const groupsLink = new HttpLink({
+  uri: "https://api.studio.thegraph.com/query/49385/groups/v5",
   fetch,
 });
 
 const clients = {
   8001: new ApolloClient({
-    link: billboardLink,
+    link: groupsLink,
     cache: new InMemoryCache(),
   }),
 };
@@ -41,36 +45,42 @@ export class GroupService {
 
     return tokens;
   }
-  
+
   async getGroup(address: string): Promise<any> {
     let groupChat = await this.getGroupChat(`${address}/${address}`);
-    const groupDetail = await this.ChainService.getCompanyContractDetails(address as Address);
-    const members = await this.NftService.getOwnersForContract(address);
     
-    if(groupChat.length > 0){
-      groupChat = groupChat[0].data
+    let details = await this.getGroupDetails(address);
+    
+
+    if (groupChat.length > 0) {
+      groupChat = groupChat[0].data;
     }
-    
+
     return {
-      owners: members.owners,
-      details:groupDetail,
-      address:address,
+      address: address,
+      ...details,
       chat: groupChat,
     };
   }
-  
 
   async getAllGroups(): Promise<any[]> {
     const query = gql`
       {
         groupCreateds(first: 5) {
           id
-          details
-          image
-          addr
           name
+          image
+          details
+          addr
           creator
-          blockTimestamp
+          achievements {
+            id
+            description
+          }
+          members {
+            address
+            tokenboundAccount
+          }
         }
       }
     `;
@@ -80,7 +90,7 @@ export class GroupService {
       fetchPolicy: "no-cache",
     });
 
-    console.log(response)
+    console.log(response);
     const requests = response.data.groupCreateds;
 
     if (response.data.groupCreateds.length == 0) {
@@ -90,13 +100,49 @@ export class GroupService {
 
     return [];
   }
-  
-  
-  async saveGroupChat(from:string, to:string, chatId: string): Promise<any> {
+
+  async saveGroupChat(from: string, to: string, chatId: string): Promise<any> {
     this.PolybaseService.saveGroupChat(from, to, chatId);
   }
   async getGroupChat(id: string): Promise<any> {
     return this.PolybaseService.getGroupChat(id);
+  }
+  
     
+  async getGroupDetails(address: string): Promise<any> {
+    // we will be testing it here for mumbai.
+    const query = gql`
+      {
+        groupCreated(id: "${address}"){
+          id
+          name
+          image
+          details
+          addr
+          creator
+          achievements {
+            id
+            description
+          }
+          members {
+            address
+            tokenboundAccount
+          }
+        }
+      }
+    `;
+
+    const response = await clients[8001].query({
+      query,
+      fetchPolicy: "no-cache",
+    });
+
+    console.log(response);
+    let requests = response.data.groupCreated;
+    
+    //details we want toread from the the url metadata like the others. 
+
+
+    return requests;
   }
 }
