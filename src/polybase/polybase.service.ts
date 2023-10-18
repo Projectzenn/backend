@@ -19,10 +19,17 @@ export interface Profile {
   description: string;
 }
 
+export enum RequestType {
+  Individual = "individual",
+  Group = "group",
+  Project = "project",
+}
+
 export interface RequestMint {
   contract: string;
   tokenId: string;
   data: string[];
+  type: RequestType;
   requester: string;
   tokenbound: string;
 }
@@ -36,7 +43,9 @@ export class PolybaseService {
   groupChat: Collection<any>;
 
   //initiate polybase.
-  constructor(private readonly ChainService: ChainService) {
+  constructor(
+    private readonly ChainService: ChainService,
+  ) {
     this.db = getPolybaseInstance();
     this.profile = this.db.collection("User");
     this.follow = this.db.collection("Followers");
@@ -63,15 +72,12 @@ export class PolybaseService {
         formData.job,
         formData.description,
       ]);
-      
-      
-      
+
       //if this is an success we going to mint the nft
       await this.ChainService.sendFaucet(formData.address as Address);
     } catch (error) {
       return { status: false, message: error };
     }
-    
 
     return { status: true, message: "profile created successfully" };
   }
@@ -79,11 +85,16 @@ export class PolybaseService {
   async requestMint(formData: RequestMint): Promise<any> {
     const id = uuidV4(randomBytes(16));
     const currentTimestamp = Math.floor(Date.now() / 1000);
+
+    if (!formData.type) {
+      formData.type = RequestType.Individual;
+    }
     try {
       await this.mintRequest.create([
         id,
         formData.contract,
         formData.tokenId,
+        formData.type,
         formData.data,
         formData.requester,
         formData.tokenbound,
@@ -109,13 +120,13 @@ export class PolybaseService {
     }
     return profiles;
   }
-  
+
   async getProfileByTBA(tba: Address): Promise<any> {
     console.log(tba);
     tba = getAddress(tba);
 
     const response = await this.profile.where("TBA", "==", tba).get();
-    
+
     console.log(response.data);
     if (response.data.length === 0) {
       return { status: false, message: "profile not found" };
@@ -202,15 +213,15 @@ export class PolybaseService {
 
     return response.data;
   }
-  
-  async updateNFT(address:string, nft: string[]): Promise<any> {
+
+  async updateNFT(address: string, nft: string[]): Promise<any> {
     const response = await this.profile
       .record(address)
       .call("updateNFT", [nft]);
 
     return response.data;
   }
-  
+
   async updateProfile(formData: any): Promise<any> {
     const response = await this.profile
       .record(formData.address)
@@ -224,31 +235,33 @@ export class PolybaseService {
 
     return response.data;
   }
-  
-  async deleteMintRequest(id: string){
+
+  async deleteMintRequest(id: string) {
     const response = await this.mintRequest
       .record(id)
       .call("deleteRequest", []);
-      
-      return response;
+
+    return response;
   }
 
   async updateTokenBound(address: string, tba: string): Promise<any> {
     const response = await this.profile
       .record(address)
       .call("updateTBA", [tba]);
-    
-      //check if tokenbound is address 
-     await  this.ChainService.sendOnboardAttributes(tba as Address);
-     
-     const nft =  ["bafkreidutepul5by5atjpebnchfscmd7s5r4pzaiezxnazuq5kdveu2fgq",
-     "bafkreidlzc4pnszwiyx73yqlbwgkchyuendxkfq63sp54vhnky3ruti5xu",
-     "bafkreihdqgem6jwebjyiahy6e4mgf5xdrqam3yaxq2ki2ew4hw6tjxq7du",
-     "bafkreigjctpasi7b2ytsn7mx47wjobnqkvioi4vllg7dqwzzvw7u2lijme",
-     "bafkreif6oi5pwrjzey5q4pmyd3zck6a53uoefozxydapiipgq2flsbldsi", 
-     "bafkreiabd3cfto7a7tjwgr5zikce476jxeeekmeif357t7v3g64uolgose"]
-     this.updateNFT(address, nft);
-      
+
+    //check if tokenbound is address
+    await this.ChainService.sendOnboardAttributes(tba as Address);
+
+    const nft = [
+      "bafkreidutepul5by5atjpebnchfscmd7s5r4pzaiezxnazuq5kdveu2fgq",
+      "bafkreidlzc4pnszwiyx73yqlbwgkchyuendxkfq63sp54vhnky3ruti5xu",
+      "bafkreihdqgem6jwebjyiahy6e4mgf5xdrqam3yaxq2ki2ew4hw6tjxq7du",
+      "bafkreigjctpasi7b2ytsn7mx47wjobnqkvioi4vllg7dqwzzvw7u2lijme",
+      "bafkreif6oi5pwrjzey5q4pmyd3zck6a53uoefozxydapiipgq2flsbldsi",
+      "bafkreiabd3cfto7a7tjwgr5zikce476jxeeekmeif357t7v3g64uolgose",
+    ];
+    this.updateNFT(address, nft);
+
     return response.data;
   }
   async getNFTOnMinting(address: string) {
@@ -296,13 +309,12 @@ export class PolybaseService {
     if (status) {
       response = await this.mintRequest
         .where("contract", "==", address)
+        .where("tokenId", "==", "0")
         .where("status", "==", status)
         .get();
     } else {
       response = await this.mintRequest.where("contract", "==", address).get();
     }
-    
-    console.log(response.data);
 
     //we also want to get all the profiles of the useres here.
     //we can do that by using the profile collection.
@@ -323,25 +335,46 @@ export class PolybaseService {
 
     return requests;
   }
-  
-  
-  async saveGroupChat(from:string, to:string, chatId:string) {
-    await this.groupChat.create([from, to, chatId])
-    .then((response) => {
-      console.log(response);
-      return response;
-    }).catch((error) => {
-      console.log(error);
-      //throw error here.. 
-      
-      return error;
-    })
 
+  async getAchievementRequests(address: string, status?: string): Promise<any[]> {
+    let response;
+    if (status) {
+      response = await this.mintRequest
+        .where("contract", "==", address)
+        .where("status", "==", status)
+        .get();
+    } else {
+      response = await this.mintRequest.where("contract", "==", address).get();
+    }
+
+    response.data = response.data.filter(
+      (request) => request.data.tokenId !== "0"
+    );
+    const results = [];
+    for (const request of response.data) {
+      results.push(request.data);
+    }
+    return results;
   }
-  
-  async getGroupChat(id:string) {
+
+  async saveGroupChat(from: string, to: string, chatId: string) {
+    await this.groupChat
+      .create([from, to, chatId])
+      .then((response) => {
+        console.log(response);
+        return response;
+      })
+      .catch((error) => {
+        console.log(error);
+        //throw error here..
+
+        return error;
+      });
+  }
+
+  async getGroupChat(id: string) {
     const response = await this.groupChat.where("id", "==", id).get();
-    
+
     return response.data;
   }
 }

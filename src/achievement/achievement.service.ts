@@ -10,6 +10,9 @@ import {
 } from "@apollo/client/core";
 import { Injectable } from "@nestjs/common";
 import { ChainService } from "src/chain/chain.service";
+import { GroupService } from "src/group/group.service";
+import { PolybaseService, RequestMint } from "src/polybase/polybase.service";
+import { ProjectService } from "src/project/project.service";
 
 const groupsLink = new HttpLink({
   uri: "https://api.studio.thegraph.com/query/49385/groups/version/latest",
@@ -26,11 +29,14 @@ const clients = {
 @Injectable()
 export class AchievementService {
   //initiate polybase.
-  constructor(private readonly ChainService: ChainService) {}
+  constructor(
+    private readonly ChainService: ChainService,
+    private readonly PolybaseService: PolybaseService, 
+    private readonly GroupService: GroupService,
+    private readonly ProjectService: ProjectService
+  ) {}
 
   async getSingleAchievement(address: string, id: any): Promise<any> {
-    //we want to get all the tokens the users account holds, then we want to get the details of each token.
-    //then we want to return the details of each token.
     const query = gql`
       {
       achievements(where: {group: "${address}", id: "${id}"}) {
@@ -42,39 +48,27 @@ export class AchievementService {
         }
         locked
       }
-    }
-  `;
+    }`;
 
-  const response = await clients[8001].query({
-    query,
-    fetchPolicy: "no-cache",
-  });
+    const response = await clients[8001].query({
+      query,
+      fetchPolicy: "no-cache",
+    });
 
-  console.log(response);
-  const requests = response.data.achievements;
-  
-  //we want to fetch the metadata of each of the requests.
-
-    const metadata = await this.ChainService.fetchMetadata(requests[0].description);
+    const requests = response.data.achievements;
+    const metadata = await this.ChainService.fetchMetadata(
+      requests[0].description
+    );
     requests[0].metadata = metadata;
 
-
-  //we want to fetcht the metadata.
-
-  if (response.data.achievements.length == 0) {
-    return [];
-  }
-  return requests[0];
-
-  
-  
+    if (response.data.achievements.length == 0) {
+      return [];
+    }
+    return requests[0];
   }
 
   async getContractAchievement(address: string): Promise<any> {
-    //get achievement by contract.. 
-    //get all the achievements by contract.
-   
-      const query = gql`
+    const query = gql`
       {
         achievements(where: {group: "${address}"}){
           id
@@ -92,23 +86,20 @@ export class AchievementService {
       fetchPolicy: "no-cache",
     });
 
-    console.log(response);
-    const requests = response.data.achievements;
-    
-    //we want to fetch the metadata of each of the requests.
-    for (let i = 0; i < requests.length; i++) {
-      const metadata = await this.ChainService.fetchMetadata(requests[i].description);
-      requests[i].metadata = metadata;
-    }
-
-    //we want to fetcht the metadata.
-
     if (response.data.achievements.length == 0) {
       return [];
     }
-    return requests;
 
-    
+    const requests = response.data.achievements;
+
+    for (let i = 0; i < requests.length; i++) {
+      const metadata = await this.ChainService.fetchMetadata(
+        requests[i].description
+      );
+      requests[i].metadata = metadata;
+    }
+
+    return requests;
   }
 
   async getAllAchievements(): Promise<any[]> {
@@ -130,12 +121,13 @@ export class AchievementService {
       fetchPolicy: "no-cache",
     });
 
-    console.log(response);
     const requests = response.data.achievements;
-    
+
     //we want to fetch the metadata of each of the requests.
     for (let i = 0; i < requests.length; i++) {
-      const metadata = await this.ChainService.fetchMetadata(requests[i].description);
+      const metadata = await this.ChainService.fetchMetadata(
+        requests[i].description
+      );
       requests[i].metadata = metadata;
     }
 
@@ -145,6 +137,57 @@ export class AchievementService {
       return [];
     }
     return requests;
+  }
 
+  async requestAchievement(formData: RequestMint): Promise<any> {
+    return this.PolybaseService.requestMint(formData);
+  }
+  
+  async getPendingRequests(address: string): Promise<any> {
+    const requests  = await this.PolybaseService.getAchievementRequests(address, "open");
+
+    //also need to get the details of the achievemnt itself 
+    
+      
+      
+      for(let i = 0; i < requests.length; i++) {
+
+        const contract = requests[i].contract;
+        const tokenId = requests[i].tokenId;
+        console.log(contract, tokenId)
+        requests[i].nft = await this.getSingleAchievement(contract, tokenId);
+        
+        if(requests[i].type === "individual") {
+          requests[i].issuer = (await this.PolybaseService.getProfileByAddress(requests[i].data.requester)).message;
+        } else if (requests[i].type === "group") {
+          requests[i].issuer = await this.GroupService.getGroup(requests[i].data.requester);
+        } else if (requests[i].type === "project") {
+          requests[i].issuer = await this.ProjectService.getProject(requests[i].data.requester);
+        }
+      }
+      
+      
+      /* for (const request of requests) {
+        console.log(request);
+        let details;
+        try {
+          if (request.data.type === "individual") {
+            details = await this.PolybaseService.getProfileByAddress(request.data.requester);
+          }  else if (request.data.type === "group") {
+            details = await this.GroupService.getGroup(request.data.requester);
+          } else if (request.data.type === "project") {
+            details = await this.ProjectService.getProject(request.data.requester);
+          }
+          requests.push({
+            request: request.data,
+            details: details,
+          });
+        } catch (error) {
+          requests.push("could not decrypt");
+        }
+      } */
+      
+      return requests;
+   
   }
 }
