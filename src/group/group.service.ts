@@ -13,10 +13,9 @@ import { ChainService } from "src/chain/chain.service";
 import { NftService } from "src/nft/nft.service";
 import { PolybaseService } from "src/polybase/polybase.service";
 
-//https://mumbai.polygonscan.com/address/0x6eF66aa692259C681adB7c728a0CD44cAdc81b42#code
-//SUPPORT FOR MORE NETWORKS IS POSSIBLE AS LONG AS THE GRAPH SUPPORTS IT.
+
 const groupsLink = new HttpLink({
-  uri: "https://api.studio.thegraph.com/query/49385/groups/v5",
+  uri: "https://api.studio.thegraph.com/query/49385/groups/version/latest",
   fetch,
 });
 
@@ -145,4 +144,6 @@ export class GroupService {
 
     return requests;
   }
+  
+
 }

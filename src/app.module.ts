@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AchievementModule } from './achievement/achievement.module';
 import { ChainModule } from './chain/chain.module';
 import { CompanyModule } from './company/company.module';
 import { GroupModule } from './group/group.module';
@@ -10,7 +11,9 @@ import { ScoreModule } from './score/score.module';
 
 @Module({
   imports: [PolybaseModule, ChainModule, NextidModule,
-    ScoreModule, NftModule, CompanyModule, GroupModule, ProjectModule],
+    ScoreModule, NftModule, CompanyModule, GroupModule, ProjectModule
+    ,AchievementModule
+  ],
   controllers: [],
   providers: [],
 })
