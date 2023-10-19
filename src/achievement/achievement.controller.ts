@@ -5,6 +5,11 @@ import { BadRequestException, Body, Controller, Get, Param, Post } from "@nestjs
 import { RequestMint } from "src/polybase/polybase.service";
 import { AchievementService } from "./achievement.service";
 
+interface ChangeStatus {
+  id: string;
+  status: string;
+}
+
 @Controller("achievement")
 export class AchievementController {
   constructor(private readonly svc: AchievementService) {}
@@ -38,6 +43,15 @@ export class AchievementController {
     return result;
   }
   
+  @Post('/update')
+  async updateMint(@Body() formData: any) {
+    console.log("staring here...")
+    console.log(formData)
+    const result = await this.svc.updateAchievement(formData);
+    return result;
+  }
+  
+    
   @Post('/request')
   async requestMint(@Body() formData: RequestMint) {
     console.log("staring here...")
@@ -46,6 +60,8 @@ export class AchievementController {
     if (!result.status) throw new BadRequestException(result.message);
     return result;
   }
+  
+  
   
   @Get('/getRequests/:contract')
   async getRequests(

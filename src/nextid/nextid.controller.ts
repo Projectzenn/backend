@@ -8,9 +8,18 @@ import { NextidService } from "./nextid.service";
 export class NextidController {
   constructor(private readonly svc: NextidService) {}
 
-  @Get("/user/:address")
-  async getMyGroups(@Param("address") address: string) {
-    const result = await this.svc.getMyProfile(address);
+  @Get("/user/profile/:platform/:address")
+  async getUserProfile(
+    @Param("platform") platform: string,
+    @Param("address") address: string,
+  ) {
+    const result = await this.svc.getMyProfile(platform, address);
+
+    return result;
+  }
+  @Get("/user/nft/:address")
+  async getUserSocials(@Param("address") address: string) {
+    const result = await this.svc.getProfileNFT(address);
 
     return result;
   }

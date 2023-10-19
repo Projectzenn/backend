@@ -56,10 +56,14 @@ export class AchievementService {
     });
 
     const requests = response.data.achievements;
-    const metadata = await this.ChainService.fetchMetadata(
-      requests[0].description
-    );
-    requests[0].metadata = metadata;
+    
+    if(requests[0]?.description) {
+      const metadata = await this.ChainService.fetchMetadata(
+        requests[0].description
+      );
+      requests[0].metadata = metadata;
+    }
+    
 
     if (response.data.achievements.length == 0) {
       return [];
@@ -102,6 +106,7 @@ export class AchievementService {
     return requests;
   }
 
+  
   async getAllAchievements(): Promise<any[]> {
     const query = gql`
       {
@@ -109,6 +114,8 @@ export class AchievementService {
           id
           group {
             id
+            name
+            addr
           }
           description
           locked
@@ -148,21 +155,21 @@ export class AchievementService {
 
     //also need to get the details of the achievemnt itself 
     
-      
+      console.log(requests);
       
       for(let i = 0; i < requests.length; i++) {
 
         const contract = requests[i].contract;
         const tokenId = requests[i].tokenId;
-        console.log(contract, tokenId)
         requests[i].nft = await this.getSingleAchievement(contract, tokenId);
         
         if(requests[i].type === "individual") {
           requests[i].issuer = (await this.PolybaseService.getProfileByAddress(requests[i].data.requester)).message;
         } else if (requests[i].type === "group") {
-          requests[i].issuer = await this.GroupService.getGroup(requests[i].data.requester);
+          requests[i].issuer = await this.GroupService.getGroup(requests[i].requester);
         } else if (requests[i].type === "project") {
-          requests[i].issuer = await this.ProjectService.getProject(requests[i].data.requester);
+
+          requests[i].issuer = await this.ProjectService.getProject(requests[i].requester);
         }
       }
       
@@ -189,5 +196,11 @@ export class AchievementService {
       
       return requests;
    
+  }
+  
+  async updateAchievement(formData: any){
+    console.log(formData);
+    const result = await this.PolybaseService.changeStatus(formData.id, formData.status);
+    return result;
   }
 }

@@ -296,7 +296,7 @@ export class PolybaseService {
     return null;
   }
 
-  async changeStatus(id: string, status) {
+  async changeStatus(id: string, status:string) {
     const timestamp = Math.floor(Date.now() / 1000);
     const response = await this.mintRequest
       .record(id)
