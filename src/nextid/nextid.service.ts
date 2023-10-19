@@ -35,6 +35,7 @@ export class NextidService {
   ) {}
 
   async getProfileNFT(address: string) {
+    address = address.toLowerCase();
     const query = gql`
      {
         identity(
