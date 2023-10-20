@@ -54,11 +54,16 @@ export class GroupService {
     if (groupChat.length > 0) {
       groupChat = groupChat[0].data;
     }
-
+    
+    const metadata = await this.ChainService.fetchMetadata(details.details);
+    if(metadata.urls?.length > 0) {
+      metadata.urls = metadata.urls.map((item) => item.value);
+    }
     return {
       address: address,
       ...details,
       chat: groupChat,
+      details: metadata,
     };
   }
 
@@ -92,6 +97,9 @@ export class GroupService {
     console.log(response);
     const requests = response.data.groupCreateds;
 
+    //we want to read the metadat detils for this one 
+    //we want to fetch the metadata of each of the requests.
+    
     if (response.data.groupCreateds.length == 0) {
       return [];
     }

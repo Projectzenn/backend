@@ -31,7 +31,7 @@ export class AchievementService {
   //initiate polybase.
   constructor(
     private readonly ChainService: ChainService,
-    private readonly PolybaseService: PolybaseService, 
+    private readonly PolybaseService: PolybaseService,
     private readonly GroupService: GroupService,
     private readonly ProjectService: ProjectService
   ) {}
@@ -56,14 +56,13 @@ export class AchievementService {
     });
 
     const requests = response.data.achievements;
-    
-    if(requests[0]?.description) {
+
+    if (requests[0]?.description) {
       const metadata = await this.ChainService.fetchMetadata(
         requests[0].description
       );
       requests[0].metadata = metadata;
     }
-    
 
     if (response.data.achievements.length == 0) {
       return [];
@@ -106,7 +105,6 @@ export class AchievementService {
     return requests;
   }
 
-  
   async getAllAchievements(): Promise<any[]> {
     const query = gql`
       {
@@ -149,32 +147,40 @@ export class AchievementService {
   async requestAchievement(formData: RequestMint): Promise<any> {
     return this.PolybaseService.requestMint(formData);
   }
-  
+
   async getPendingRequests(address: string): Promise<any> {
-    const requests  = await this.PolybaseService.getAchievementRequests(address, "open");
+    const requests = await this.PolybaseService.getAchievementRequests(
+      address,
+      "open"
+    );
 
-    //also need to get the details of the achievemnt itself 
-    
-      console.log(requests);
-      
-      for(let i = 0; i < requests.length; i++) {
+    //also need to get the details of the achievemnt itself
 
-        const contract = requests[i].contract;
-        const tokenId = requests[i].tokenId;
-        requests[i].nft = await this.getSingleAchievement(contract, tokenId);
-        
-        if(requests[i].type === "individual") {
-          requests[i].issuer = (await this.PolybaseService.getProfileByAddress(requests[i].data.requester)).message;
-        } else if (requests[i].type === "group") {
-          requests[i].issuer = await this.GroupService.getGroup(requests[i].requester);
-        } else if (requests[i].type === "project") {
+    console.log(requests);
 
-          requests[i].issuer = await this.ProjectService.getProject(requests[i].requester);
-        }
+    for (let i = 0; i < requests.length; i++) {
+      const contract = requests[i].contract;
+      const tokenId = requests[i].tokenId;
+      requests[i].nft = await this.getSingleAchievement(contract, tokenId);
+
+      if (requests[i].type === "individual") {
+        requests[i].issuer = (
+          await this.PolybaseService.getProfileByAddress(
+            requests[i].data.requester
+          )
+        ).message;
+      } else if (requests[i].type === "group") {
+        requests[i].issuer = await this.GroupService.getGroup(
+          requests[i].requester
+        );
+      } else if (requests[i].type === "project") {
+        requests[i].issuer = await this.ProjectService.getProject(
+          requests[i].requester
+        );
       }
-      
-      
-      /* for (const request of requests) {
+    }
+
+    /* for (const request of requests) {
         console.log(request);
         let details;
         try {
@@ -193,14 +199,46 @@ export class AchievementService {
           requests.push("could not decrypt");
         }
       } */
-      
-      return requests;
-   
+
+    return requests;
   }
-  
-  async updateAchievement(formData: any){
+
+  async updateAchievement(formData: any) {
     console.log(formData);
-    const result = await this.PolybaseService.changeStatus(formData.id, formData.status);
+    const result = await this.PolybaseService.changeStatus(
+      formData.id,
+      formData.status
+    );
     return result;
+  }
+
+  async getUserAchievements(address: string): Promise<any> {
+    const query = gql`
+    {
+      achievementRewards(where: {member_: "${address}"}){
+        achievementId
+        amount
+        id
+        member {
+          group {
+            addr
+          }
+        }
+      }
+    }
+  `;
+
+    const response = await clients[8001].query({
+      query,
+      fetchPolicy: "no-cache",
+    });
+
+    if (response.data.achievements.length == 0) {
+      return [];
+    }
+
+    const requests = response.data.achievements;
+    
+    return requests;
   }
 }

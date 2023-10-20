@@ -73,5 +73,15 @@ export class AchievementController {
     return result;
   }
   
+  @Get('/userAchievements/:address')
+  async getUserAchievements(
+    @Param('address') address: string,
+  ) {
+    const result = await this.svc.getUserAchievements(address);
+    //we want to make sure that we can get the iupfs details back
+
+    return result;
+  }
+  
   
 }
