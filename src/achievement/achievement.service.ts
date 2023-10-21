@@ -219,6 +219,14 @@ export class AchievementService {
     where: {member_: {address: "${address}"}}
   ) {
     id
+    achievement{
+      
+    description
+    }
+    group {
+      id
+      addr
+    }
   }
 }
   `;
@@ -231,9 +239,22 @@ export class AchievementService {
     if (response.data.achievementRewards.length == 0) {
       return [];
     }
+    
+    
 
     const requests = response.data.achievementRewards;
     
+    for (let i = 0; i < requests.length; i++) {
+      let metadata = null;
+      
+      if(requests[i].achievement.description) {
+      metadata = await this.ChainService.fetchMetadata(
+        requests[i].achievement.description
+      );
+      }
+      requests[i].metadata = metadata;
+    }
+
     return requests;
   }
 }

@@ -56,7 +56,7 @@ export class ProjectService {
           }
           members {
             address
-            id
+            tokenId
           }
         }
       }
@@ -69,10 +69,11 @@ export class ProjectService {
 
     console.log(response);
     const requests = response.data.projectCreateds;
-
+   
     for (let i = 0; i < requests.length; i++) {
       if (requests[i].details) {
         console.log("fetching metadata");
+        requests[i].members = requests[i].members.map((member) => member.address);
         await this.ChainService.fetchMetadata(requests[i].details).then(
           (metadata) => {
             console.log(metadata);
@@ -101,24 +102,23 @@ export class ProjectService {
       {
         projectCreated(id: "${address}"){
           id
-    name
-    image
-    details
-    projectAddress
-    pushChannel
-    url
-    deadline
-    creator
-    works {
-      status
-      id
-      description
-    }
-    members {
-      address
-      id
-    }
-  }
+          name
+          image
+          details
+          projectAddress
+          pushChannel
+          url
+          deadline
+          creator
+          works {
+            status
+            id
+            description
+          }
+          members {
+            address
+          }}
+        }
 
     `;
 
@@ -127,11 +127,17 @@ export class ProjectService {
       fetchPolicy: "no-cache",
     });
 
+  
     console.log(response);
+    
+    if (response.data.projectCreated == null) {
+      return null;
+    }
     let requests = response.data.projectCreated;
 
     //we need to do some convertion
-    const addresses: string[] = requests.members.map((item) => item.address);
+    let addresses: string[] = [];
+    
 
     if (requests.details) {
       console.log("fetching metadata");
@@ -144,7 +150,6 @@ export class ProjectService {
           }
           requests = {
             ...requests,
-            workers: addresses,
             ...metadata,
           };
         }
