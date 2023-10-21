@@ -214,18 +214,13 @@ export class AchievementService {
 
   async getUserAchievements(address: string): Promise<any> {
     const query = gql`
-    {
-      achievementRewards(where: {member_: "${address}"}){
-        achievementId
-        amount
-        id
-        member {
-          group {
-            addr
-          }
-        }
-      }
-    }
+   {
+  achievementRewards(
+    where: {member_: {address: "${address}"}}
+  ) {
+    id
+  }
+}
   `;
 
     const response = await clients[8001].query({
@@ -233,11 +228,11 @@ export class AchievementService {
       fetchPolicy: "no-cache",
     });
 
-    if (response.data.achievements.length == 0) {
+    if (response.data.achievementRewards.length == 0) {
       return [];
     }
 
-    const requests = response.data.achievements;
+    const requests = response.data.achievementRewards;
     
     return requests;
   }

@@ -70,7 +70,7 @@ export class GroupService {
   async getAllGroups(): Promise<any[]> {
     const query = gql`
       {
-        groupCreateds(first: 5) {
+        groupCreateds(first: 30) {
           id
           name
           image

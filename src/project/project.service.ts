@@ -31,28 +31,32 @@ export interface Project {
 }
 @Injectable()
 export class ProjectService {
-  constructor(private readonly ChainService: ChainService, private readonly PolybaseService: PolybaseService) {}
+  constructor(
+    private readonly ChainService: ChainService,
+    private readonly PolybaseService: PolybaseService
+  ) {}
   async getAllProjects(): Promise<any[]> {
     // we will be testing it here for mumbai.
     const query = gql`
       {
-        projectCreateds(first: 5) {
+        projectCreateds(first: 100) {
           id
           name
-          image 
-          
+          image
           details
-          workers {
-            address
-          }
-          milestones {
+          projectAddress
+          pushChannel
+          url
+          deadline
+          creator
+          works {
+            status
             id
             description
-            deadline
           }
-          works {
-            description
-            status
+          members {
+            address
+            id
           }
         }
       }
@@ -65,24 +69,23 @@ export class ProjectService {
 
     console.log(response);
     const requests = response.data.projectCreateds;
-    
-    
-    for(let i = 0; i < requests.length; i++) {
-      if(requests[i].details){
-        console.log("fetching metadata")
-        await this.ChainService.fetchMetadata(requests[i].details).then((metadata) => {
-          
-          console.log(metadata)
-          
-          if(metadata.urls?.length > 0) {
-            metadata.urls = metadata.urls.map((item) => item.value);
+
+    for (let i = 0; i < requests.length; i++) {
+      if (requests[i].details) {
+        console.log("fetching metadata");
+        await this.ChainService.fetchMetadata(requests[i].details).then(
+          (metadata) => {
+            console.log(metadata);
+
+            if (metadata.urls?.length > 0) {
+              metadata.urls = metadata.urls.map((item) => item.value);
+            }
+            requests[i] = {
+              ...metadata,
+              ...requests[i],
+            };
           }
-          requests[i] = {
-            ...metadata,
-            ...requests[i],
-          }
-    
-        });
+        );
       }
     }
 
@@ -91,31 +94,32 @@ export class ProjectService {
     }
     return requests;
   }
-  
+
   async getProject(address: string): Promise<any> {
     // we will be testing it here for mumbai.
     const query = gql`
       {
         projectCreated(id: "${address}"){
           id
-          name
-          image 
-          
-          details
-          workers {
-            address
-          }
-          milestones {
-            id
-            description
-            deadline
-          }
-          works {
-            description
-            status
-          }
-        }
-      }
+    name
+    image
+    details
+    projectAddress
+    pushChannel
+    url
+    deadline
+    creator
+    works {
+      status
+      id
+      description
+    }
+    members {
+      address
+      id
+    }
+  }
+
     `;
 
     const response = await clients[8001].query({
@@ -125,41 +129,39 @@ export class ProjectService {
 
     console.log(response);
     let requests = response.data.projectCreated;
-    
+
     //we need to do some convertion
-    const addresses: string[] = requests.workers.map(item => item.address);
-    
+    const addresses: string[] = requests.members.map((item) => item.address);
 
+    if (requests.details) {
+      console.log("fetching metadata");
+      await this.ChainService.fetchMetadata(requests.details).then(
+        (metadata) => {
+          console.log(metadata);
 
-
-    if(requests.details){
-      console.log("fetching metadata")
-      await this.ChainService.fetchMetadata(requests.details).then((metadata) => {
-        
-        console.log(metadata)
-        
-        if(metadata.urls?.length > 0) {
-          metadata.urls = metadata.urls.map((item) => item.value);
+          if (metadata.urls?.length > 0) {
+            metadata.urls = metadata.urls.map((item) => item.value);
+          }
+          requests = {
+            ...requests,
+            workers: addresses,
+            ...metadata,
+          };
         }
-        requests = {
-          ...requests,
-          workers: addresses,
-          ...metadata
-        }
-  
-      });
+      );
     }
-    
-    //getting the chatId aswel 
-    let groupChat = await this.PolybaseService.getGroupChat(`${address}/${address}`);
+
+    //getting the chatId aswel
+    let groupChat = await this.PolybaseService.getGroupChat(
+      `${address}/${address}`
+    );
     if (groupChat.length > 0) {
       groupChat = groupChat[0].data;
     }
-    
 
     return {
       ...requests,
-      chatId: groupChat
+      chatId: groupChat,
     };
   }
 }
