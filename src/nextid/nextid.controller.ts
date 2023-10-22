@@ -3,6 +3,7 @@
  */
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
 import axios from "axios";
+import { PolybaseService } from "src/polybase/polybase.service";
 import { NextidService } from "./nextid.service";
 
 interface VerifyResponse {
@@ -14,10 +15,11 @@ interface VerifyResponse {
     created_at: string;
     access_token: string;
     public_key: string;
+    address:string;
   }
 @Controller("nextid")
 export class NextidController {
-  constructor(private readonly svc: NextidService) {}
+  constructor(private readonly svc: NextidService, private readonly polybaseService: PolybaseService) {}
 
   @Get("/user/profile/:platform/:address")
   async getUserProfile(
@@ -129,6 +131,10 @@ export class NextidController {
     
     try {
       const verifyResponse = await axios.post("https://proof-service.nextnext.id/v1/proof", proof);
+      
+      if(verifyResponse.data.status == "success") {
+        this.polybaseService.updateGithub(data.address, gistResponse.data.owner.login, gistResponse.data.id) 
+      }
       return verifyResponse.data;
 
     } catch (error) {

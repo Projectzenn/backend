@@ -167,6 +167,15 @@ export class PolybaseService {
 
     return followee;
   }
+  
+  async updateGithub(address: string, github: string, proof:string): Promise<any> {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const response = await this.profile
+      .record(address)
+      .call("updateGithub", [github, proof, timestamp]);
+
+    return response.data;
+  }
 
   async getFollowers(address: string): Promise<any> {
     //get all the folloewers of a users.
