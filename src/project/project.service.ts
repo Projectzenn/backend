@@ -114,6 +114,7 @@ export class ProjectService {
             status
             id
             description
+
           }
           members {
             address

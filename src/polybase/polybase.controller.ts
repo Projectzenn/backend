@@ -110,12 +110,15 @@ export class PolybaseController {
     const result = await this.svc.getFollowing(address);
     return result;
   }
-  @Get('/update/avatar/:address/:string')
+  
+  //we want this to be a post
+  @Post('/update/avatar/:address')
   async updateAvatar(
     @Param('address') address: string,
-    @Param('string') string: string,
+    @Body('avatar') avatar: string[],
   ) {
-    return this.svc.updateAvatar(address, string);
+    console.log("gertting here.")
+    return this.svc.updateNFT(address, avatar);
   }
   
   @Get('/update/nft/:address/:nft')
