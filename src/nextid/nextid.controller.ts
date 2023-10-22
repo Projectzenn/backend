@@ -62,14 +62,8 @@ export class NextidController {
           headers: { Authorization: `token ${tokenResponse.data.access_token}` },
         }
       );
-      const username = userResponse.data.login;
-      
-
-      
+      const username = userResponse.data.login;      
       const token = tokenResponse.data.access_token;
-      console.log(tokenResponse.data)
- 
-      
       const proof = {
         action: "create",
         platform: "github",
@@ -80,11 +74,11 @@ export class NextidController {
      const request =  await axios.post("https://proof-service.nextnext.id/v1/proof/payload", proof)
      console.log(request.data);  // This will log the public URL of the Gist
         const returnData = {...request.data, access_token: token, public_key: publicKey};
-        console.log(returnData)
+
         return returnData;
         
     } catch (error) {
-      console.error(error);
+      console.error(error)
       return "error";
     }
   }
@@ -95,8 +89,6 @@ export class NextidController {
   async verifyProof(
     @Body() data: VerifyResponse,
   ) {
-    console.log("starting here...")
-    console.log(data)
     const gist = {
         description: "Submitted by Careerzen",
         public: true,
@@ -115,7 +107,6 @@ export class NextidController {
       });
      
            
-      console.log(gistResponse)
     
     const proof = 
         {
@@ -132,7 +123,8 @@ export class NextidController {
     try {
       const verifyResponse = await axios.post("https://proof-service.nextnext.id/v1/proof", proof);
       
-      if(verifyResponse.data.status == "success") {
+      console.log(verifyResponse)
+      if(verifyResponse.status == 201) {
         this.polybaseService.updateGithub(data.address, gistResponse.data.owner.login, gistResponse.data.id) 
       }
       return verifyResponse.data;
