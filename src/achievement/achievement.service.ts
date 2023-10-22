@@ -39,7 +39,7 @@ export class AchievementService {
   async getSingleAchievement(address: string, id: any): Promise<any> {
     const query = gql`
       {
-      achievements(where: {group: "${address}", id: "${id}"}) {
+      achievements(where: {group: "${address}", tokenId: "${id}"}) {
         id
         description
         group {
@@ -75,6 +75,7 @@ export class AchievementService {
       {
         achievements(where: {group: "${address}"}){
           id
+          tokenId
           group {
             id
           }
@@ -110,6 +111,7 @@ export class AchievementService {
       {
         achievements(first: 100) {
           id
+          tokenId
           group {
             id
             name
@@ -160,7 +162,7 @@ export class AchievementService {
 
     for (let i = 0; i < requests.length; i++) {
       const contract = requests[i].contract;
-      const tokenId = requests[i].tokenId;
+      const tokenId = parseInt(requests[i].tokenId);
       requests[i].nft = await this.getSingleAchievement(contract, tokenId);
 
       if (requests[i].type === "individual") {
@@ -220,8 +222,8 @@ export class AchievementService {
   ) {
     id
     achievement{
-      
-    description
+      tokenId
+      description
     }
   }
 }
