@@ -291,6 +291,13 @@ export class PolybaseService {
     }
     return allItems;
   }
+  
+  async getMintRequest(id: string) {
+    const response = await this.mintRequest.where("requester", "==", id).get();
+
+    return response.data.map(item => item.data);
+
+  }
 
   async followProfile(): Promise<any> {
     return null;

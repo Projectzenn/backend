@@ -180,27 +180,27 @@ export class AchievementService {
       }
     }
 
-    /* for (const request of requests) {
-        console.log(request);
-        let details;
-        try {
-          if (request.data.type === "individual") {
-            details = await this.PolybaseService.getProfileByAddress(request.data.requester);
-          }  else if (request.data.type === "group") {
-            details = await this.GroupService.getGroup(request.data.requester);
-          } else if (request.data.type === "project") {
-            details = await this.ProjectService.getProject(request.data.requester);
-          }
-          requests.push({
-            request: request.data,
-            details: details,
-          });
-        } catch (error) {
-          requests.push("could not decrypt");
-        }
-      } */
-
     return requests;
+  }
+  
+  async mintRequests(address: string): Promise<any> {
+    const requests = await this.PolybaseService.getMintRequest(address);
+    
+    let results = [];
+    
+    for (let i = 0; i < requests.length; i++) {
+      const achievement = await this.getSingleAchievement((requests[i] as any).contract, (requests[i] as any).tokenId);
+      
+      results.push({
+        ...requests[i],
+        achievement
+      })
+    }
+    
+    return results;
+
+    
+    
   }
 
   async updateAchievement(formData: any) {
@@ -222,10 +222,6 @@ export class AchievementService {
     achievement{
       
     description
-    }
-    group {
-      id
-      addr
     }
   }
 }

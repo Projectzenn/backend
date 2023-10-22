@@ -83,5 +83,16 @@ export class AchievementController {
     return result;
   }
   
+  @Get('/getAchievementRequests/:address')
+  async getAchievementRequests(
+    @Param('address') address: string,
+  ) {
+    const result = await this.svc.mintRequests(address);
+    //we want to make sure that we can get the iupfs details back
+
+    return result;
+  }
+  
+  
   
 }

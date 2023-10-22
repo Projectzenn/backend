@@ -39,7 +39,7 @@ export class ProjectService {
     // we will be testing it here for mumbai.
     const query = gql`
       {
-        projectCreateds(first: 100) {
+        projectCreateds(first: 30) {
           id
           name
           image
